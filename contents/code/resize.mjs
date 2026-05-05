@@ -42,19 +42,12 @@ export class Resize {
 
     if (tile) {
       const geo = tile.absoluteGeometry;
-      if (delta > 0) {
-        const allTiles = this.tiles.getTilesCurrentDesktop();
-        const maxRight = Math.max(...allTiles.map(
-          t => t.absoluteGeometry.x + t.absoluteGeometry.width
-        ));
-        if (geo.x + geo.width >= maxRight - 1) {
-          tile.resizeByPixels(delta, Qt.LeftEdge);
-        } else {
-          tile.resizeByPixels(delta, Qt.RightEdge);
-        }
-      } else {
-        tile.resizeByPixels(delta, Qt.RightEdge);
-      }
+      const allTiles = this.tiles.getTilesCurrentDesktop();
+      const maxRight = Math.max(...allTiles.map(
+        t => t.absoluteGeometry.x + t.absoluteGeometry.width
+      ));
+      const edge = (geo.x + geo.width >= maxRight - 1) ? Qt.LeftEdge : Qt.RightEdge;
+      tile.resizeByPixels(delta, edge);
       this.windows.extendCurrentDesktop(false);
     } else {
       const fg = win.frameGeometry;
@@ -71,19 +64,12 @@ export class Resize {
 
     if (tile) {
       const geo = tile.absoluteGeometry;
-      if (delta > 0) {
-        const allTiles = this.tiles.getTilesCurrentDesktop();
-        const maxBottom = Math.max(...allTiles.map(
-          t => t.absoluteGeometry.y + t.absoluteGeometry.height
-        ));
-        if (geo.y + geo.height >= maxBottom - 1) {
-          tile.resizeByPixels(delta, Qt.TopEdge);
-        } else {
-          tile.resizeByPixels(delta, Qt.BottomEdge);
-        }
-      } else {
-        tile.resizeByPixels(delta, Qt.BottomEdge);
-      }
+      const allTiles = this.tiles.getTilesCurrentDesktop();
+      const maxBottom = Math.max(...allTiles.map(
+        t => t.absoluteGeometry.y + t.absoluteGeometry.height
+      ));
+      const edge = (geo.y + geo.height >= maxBottom - 1) ? Qt.TopEdge : Qt.BottomEdge;
+      tile.resizeByPixels(delta, edge);
       this.windows.extendCurrentDesktop(false);
     } else {
       const fg = win.frameGeometry;
