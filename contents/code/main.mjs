@@ -12,7 +12,7 @@ export class Engine {
   constructor(
     workspace,
     config,
-    { root, timerInstantiator, windowFullscreen, windowCompact, windowPopup },
+    { root, timerInstantiator, windowFullscreen, windowCompact, windowPopup, windowResizeMode },
   ) {
     this.state = {
       avoidChildChanged: false,
@@ -42,7 +42,7 @@ export class Engine {
       this.windowsUI.windowCompact,
       this.windowsUI.windowPopup,
     );
-    this.classes.resize = new Resize(workspace, config, root, this.classes);
+    this.classes.resize = new Resize(workspace, config, root, windowResizeMode, this.classes);
     this.classes.shortcuts = new Shortcuts(
       workspace,
       config,

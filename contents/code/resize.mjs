@@ -1,14 +1,13 @@
 export class Resize {
-  constructor(workspace, config, root, { blocklist, tiles, windows }) {
+  constructor(workspace, config, root, windowResizeMode, { blocklist, tiles, windows }) {
     this.workspace = workspace;
     this.config = config;
     this.root = root;
+    this.overlay = windowResizeMode;
     this.blocklist = blocklist;
     this.tiles = tiles;
     this.windows = windows;
     this.active = false;
-    this._savedShortcuts = [];
-    this._savedRootVisible = false;
   }
 
   _step() {
@@ -53,10 +52,10 @@ export class Resize {
     if (!win) return;
     const tile = this._getTile(win);
     if (tile) {
-      this.root.resizeOverlayGeometry = tile.absoluteGeometry;
+      this.overlay.overlayGeometry = tile.absoluteGeometry;
     } else {
       const geo = win.frameGeometry;
-      this.root.resizeOverlayGeometry = Qt.rect(geo.x, geo.y, geo.width, geo.height);
+      this.overlay.overlayGeometry = Qt.rect(geo.x, geo.y, geo.width, geo.height);
     }
   }
 
@@ -73,62 +72,16 @@ export class Resize {
     if (!win) return;
 
     this.active = true;
-    this._savedShortcuts = [...this.root.shortcuts];
-
-    const step = this._step();
-    this.root.shortcuts = [
-      ...this._savedShortcuts,
-      {
-        name: "FluidtileResizeIncreaseWidth",
-        text: "流体平铺 | 调整模式：增大宽度",
-        sequence: "Right",
-        callback: () => this.increaseWidth(),
-      },
-      {
-        name: "FluidtileResizeDecreaseWidth",
-        text: "流体平铺 | 调整模式：减小宽度",
-        sequence: "Left",
-        callback: () => this.decreaseWidth(),
-      },
-      {
-        name: "FluidtileResizeIncreaseHeight",
-        text: "流体平铺 | 调整模式：增大高度",
-        sequence: "Up",
-        callback: () => this.increaseHeight(),
-      },
-      {
-        name: "FluidtileResizeDecreaseHeight",
-        text: "流体平铺 | 调整模式：减小高度",
-        sequence: "Down",
-        callback: () => this.decreaseHeight(),
-      },
-      {
-        name: "FluidtileResizeExit",
-        text: "流体平铺 | 调整模式：退出",
-        sequence: "Escape",
-        callback: () => this.deactivate(),
-      },
-      {
-        name: "FluidtileResizeExitEnter",
-        text: "流体平铺 | 调整模式：退出",
-        sequence: "Return",
-        callback: () => this.deactivate(),
-      },
-    ];
-
-    this._savedRootVisible = this.root.visible;
-    this.root.visible = true;
-    this.root.resizeModeActive = true;
+    this.overlay.visible = true;
+    this.overlay.resizeObj = this;
     this._updateOverlay();
   }
 
   deactivate() {
     this.active = false;
-    this.root.shortcuts = [...this._savedShortcuts];
-    this._savedShortcuts = [];
-    this.root.resizeModeActive = false;
-    this.root.resizeOverlayGeometry = undefined;
-    this.root.visible = this._savedRootVisible;
+    this.overlay.visible = false;
+    this.overlay.overlayGeometry = undefined;
+    this.overlay.resizeObj = undefined;
   }
 
   increaseWidth() {
