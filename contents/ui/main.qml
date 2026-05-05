@@ -8,7 +8,6 @@ Window {
     property var config: ({})
     property var engine: ({})
     property var shortcuts: []
-    property var resizeShortcuts: []
     property var timers: []
     property var tileActive: undefined
     property var resizeOverlayGeometry: undefined
@@ -112,16 +111,6 @@ Window {
 
     Repeater {
         model: root.shortcuts
-        delegate: Shortcut {
-            name: modelData.name
-            text: modelData.text
-            sequence: modelData.sequence
-            callback: modelData.callback
-        }
-    }
-
-    Instantiator {
-        model: root.resizeShortcuts
         delegate: Shortcut {
             name: modelData.name
             text: modelData.text

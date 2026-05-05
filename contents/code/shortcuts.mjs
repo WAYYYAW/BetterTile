@@ -36,8 +36,32 @@ export class Shortcuts {
         },
       },
       {
+        name: "FluidtileIncreaseWidth",
+        text: "流体平铺 | 增大窗口宽度",
+        sequence: "Meta+Shift+Right",
+        callback: () => resize.increaseWidth(),
+      },
+      {
+        name: "FluidtileDecreaseWidth",
+        text: "流体平铺 | 减小窗口宽度",
+        sequence: "Meta+Shift+Left",
+        callback: () => resize.decreaseWidth(),
+      },
+      {
+        name: "FluidtileIncreaseHeight",
+        text: "流体平铺 | 增大窗口高度",
+        sequence: "Meta+Shift+Up",
+        callback: () => resize.increaseHeight(),
+      },
+      {
+        name: "FluidtileDecreaseHeight",
+        text: "流体平铺 | 减小窗口高度",
+        sequence: "Meta+Shift+Down",
+        callback: () => resize.decreaseHeight(),
+      },
+      {
         name: "FluidtileToggleResizeMode",
-        text: "流体平铺 | 进入/退出窗口大小调整模式",
+        text: "流体平铺 | 显示/隐藏调整大小指示器",
         sequence: "Meta+R",
         callback: () => resize.toggle(),
       },

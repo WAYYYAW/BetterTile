@@ -59,15 +59,6 @@ export class Resize {
     }
   }
 
-  _resizeShortcut(nameSuffix, text, sequence, callback) {
-    return {
-      name: "FluidtileResize_" + nameSuffix,
-      text: text,
-      sequence: sequence,
-      callback: callback,
-    };
-  }
-
   toggle() {
     if (this.active) {
       this.deactivate();
@@ -81,16 +72,6 @@ export class Resize {
     if (!win) return;
 
     this.active = true;
-
-    this.root.resizeShortcuts = [
-      this._resizeShortcut("Right", "流体平铺 | 调整模式：增大宽度", "Right", () => this.increaseWidth()),
-      this._resizeShortcut("Left", "流体平铺 | 调整模式：减小宽度", "Left", () => this.decreaseWidth()),
-      this._resizeShortcut("Up", "流体平铺 | 调整模式：增大高度", "Up", () => this.increaseHeight()),
-      this._resizeShortcut("Down", "流体平铺 | 调整模式：减小高度", "Down", () => this.decreaseHeight()),
-      this._resizeShortcut("ExitEsc", "流体平铺 | 调整模式：退出", "Escape", () => this.deactivate()),
-      this._resizeShortcut("ExitEnter", "流体平铺 | 调整模式：退出", "Return", () => this.deactivate()),
-    ];
-
     this._savedRootVisible = this.root.visible;
     this.root.visible = true;
     this.root.resizeModeActive = true;
@@ -99,29 +80,24 @@ export class Resize {
 
   deactivate() {
     this.active = false;
-    this.root.resizeShortcuts = [];
     this.root.resizeModeActive = false;
     this.root.resizeOverlayGeometry = undefined;
     this.root.visible = this._savedRootVisible;
   }
 
   increaseWidth() {
-    if (!this.active) return;
     this._resizeEdge(Qt.RightEdge, this._step());
   }
 
   decreaseWidth() {
-    if (!this.active) return;
     this._resizeEdge(Qt.RightEdge, -this._step());
   }
 
   increaseHeight() {
-    if (!this.active) return;
     this._resizeEdge(Qt.BottomEdge, this._step());
   }
 
   decreaseHeight() {
-    if (!this.active) return;
     this._resizeEdge(Qt.BottomEdge, -this._step());
   }
 }
