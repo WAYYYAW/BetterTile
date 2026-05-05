@@ -1,13 +1,13 @@
 export class Resize {
-  constructor(workspace, config, root, windowResizeMode, { blocklist, tiles, windows }) {
+  constructor(workspace, config, root, { blocklist, tiles, windows }) {
     this.workspace = workspace;
     this.config = config;
     this.root = root;
-    this.overlay = windowResizeMode;
     this.blocklist = blocklist;
     this.tiles = tiles;
     this.windows = windows;
     this.active = false;
+    this._savedRootVisible = false;
   }
 
   _step() {
@@ -52,11 +52,20 @@ export class Resize {
     if (!win) return;
     const tile = this._getTile(win);
     if (tile) {
-      this.overlay.overlayGeometry = tile.absoluteGeometry;
+      this.root.resizeOverlayGeometry = tile.absoluteGeometry;
     } else {
       const geo = win.frameGeometry;
-      this.overlay.overlayGeometry = Qt.rect(geo.x, geo.y, geo.width, geo.height);
+      this.root.resizeOverlayGeometry = Qt.rect(geo.x, geo.y, geo.width, geo.height);
     }
+  }
+
+  _resizeShortcut(nameSuffix, text, sequence, callback) {
+    return {
+      name: "FluidtileResize_" + nameSuffix,
+      text: text,
+      sequence: sequence,
+      callback: callback,
+    };
   }
 
   toggle() {
@@ -72,16 +81,28 @@ export class Resize {
     if (!win) return;
 
     this.active = true;
-    this.overlay.visible = true;
-    this.overlay.resizeObj = this;
+
+    this.root.resizeShortcuts = [
+      this._resizeShortcut("Right", "流体平铺 | 调整模式：增大宽度", "Right", () => this.increaseWidth()),
+      this._resizeShortcut("Left", "流体平铺 | 调整模式：减小宽度", "Left", () => this.decreaseWidth()),
+      this._resizeShortcut("Up", "流体平铺 | 调整模式：增大高度", "Up", () => this.increaseHeight()),
+      this._resizeShortcut("Down", "流体平铺 | 调整模式：减小高度", "Down", () => this.decreaseHeight()),
+      this._resizeShortcut("ExitEsc", "流体平铺 | 调整模式：退出", "Escape", () => this.deactivate()),
+      this._resizeShortcut("ExitEnter", "流体平铺 | 调整模式：退出", "Return", () => this.deactivate()),
+    ];
+
+    this._savedRootVisible = this.root.visible;
+    this.root.visible = true;
+    this.root.resizeModeActive = true;
     this._updateOverlay();
   }
 
   deactivate() {
     this.active = false;
-    this.overlay.visible = false;
-    this.overlay.overlayGeometry = undefined;
-    this.overlay.resizeObj = undefined;
+    this.root.resizeShortcuts = [];
+    this.root.resizeModeActive = false;
+    this.root.resizeOverlayGeometry = undefined;
+    this.root.visible = this._savedRootVisible;
   }
 
   increaseWidth() {

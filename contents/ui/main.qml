@@ -8,8 +8,11 @@ Window {
     property var config: ({})
     property var engine: ({})
     property var shortcuts: []
+    property var resizeShortcuts: []
     property var timers: []
     property var tileActive: undefined
+    property var resizeOverlayGeometry: undefined
+    property bool resizeModeActive: false
     property var screens: Workspace.screens
     property var layouts: ({
             popup: [],
@@ -73,8 +76,7 @@ Window {
             timerInstantiator,
             windowFullscreen,
             windowCompact,
-            windowPopup,
-            windowResizeMode
+            windowPopup
         });
     }
 
@@ -118,6 +120,16 @@ Window {
         }
     }
 
+    Instantiator {
+        model: root.resizeShortcuts
+        delegate: Shortcut {
+            name: modelData.name
+            text: modelData.text
+            sequence: modelData.sequence
+            callback: modelData.callback
+        }
+    }
+
     UIFullscreen {
         id: windowFullscreen
         width: root.width
@@ -151,6 +163,8 @@ Window {
 
     UIModeResize {
         id: windowResizeMode
+        visible: root.resizeModeActive
         theme: theme
+        overlayGeometry: root.resizeOverlayGeometry
     }
 }

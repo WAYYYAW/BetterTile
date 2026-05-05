@@ -1,49 +1,13 @@
 import QtQuick
-import org.kde.kwin
 
-Window {
+Rectangle {
     id: modeResize
-    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.BypassWindowManagerHint
-    width: Workspace.virtualScreenSize.width
-    height: Workspace.virtualScreenSize.height
-    visible: false
     color: "transparent"
+    anchors.fill: parent
+    visible: false
 
     property var overlayGeometry: undefined
     property var theme: ({})
-    property var resizeObj: undefined
-
-    Item {
-        anchors.fill: parent
-        focus: true
-
-        Keys.onPressed: function(event) {
-            if (!resizeObj || !resizeObj.active) return;
-
-            switch (event.key) {
-                case Qt.Key_Right:
-                    resizeObj.increaseWidth();
-                    break;
-                case Qt.Key_Left:
-                    resizeObj.decreaseWidth();
-                    break;
-                case Qt.Key_Up:
-                    resizeObj.increaseHeight();
-                    break;
-                case Qt.Key_Down:
-                    resizeObj.decreaseHeight();
-                    break;
-                case Qt.Key_Escape:
-                case Qt.Key_Return:
-                case Qt.Key_Enter:
-                    resizeObj.deactivate();
-                    break;
-                default:
-                    return;
-            }
-            event.accepted = true;
-        }
-    }
 
     Rectangle {
         id: frame
