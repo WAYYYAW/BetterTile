@@ -7,6 +7,8 @@ export class Resize {
     this.tiles = tiles;
     this.windows = windows;
     this.active = false;
+    this._baseShortcuts = [];
+    this._instanceId = 0;
     this._savedRootVisible = false;
   }
 
@@ -71,7 +73,54 @@ export class Resize {
     const win = this._getActiveWindow();
     if (!win) return;
 
+    if (this._baseShortcuts.length === 0) {
+      this._baseShortcuts = [...this.root.shortcuts];
+    }
+
     this.active = true;
+    this._instanceId++;
+    const id = this._instanceId;
+
+    this.root.shortcuts = [
+      ...this._baseShortcuts,
+      {
+        name: "FluidtileResizeIncreaseWidth_" + id,
+        text: "流体平铺 | 调整模式：增大宽度",
+        sequence: "Right",
+        callback: () => this.increaseWidth(),
+      },
+      {
+        name: "FluidtileResizeDecreaseWidth_" + id,
+        text: "流体平铺 | 调整模式：减小宽度",
+        sequence: "Left",
+        callback: () => this.decreaseWidth(),
+      },
+      {
+        name: "FluidtileResizeIncreaseHeight_" + id,
+        text: "流体平铺 | 调整模式：增大高度",
+        sequence: "Up",
+        callback: () => this.increaseHeight(),
+      },
+      {
+        name: "FluidtileResizeDecreaseHeight_" + id,
+        text: "流体平铺 | 调整模式：减小高度",
+        sequence: "Down",
+        callback: () => this.decreaseHeight(),
+      },
+      {
+        name: "FluidtileResizeExit_" + id,
+        text: "流体平铺 | 调整模式：退出",
+        sequence: "Escape",
+        callback: () => this.deactivate(),
+      },
+      {
+        name: "FluidtileResizeExitEnter_" + id,
+        text: "流体平铺 | 调整模式：退出",
+        sequence: "Return",
+        callback: () => this.deactivate(),
+      },
+    ];
+
     this._savedRootVisible = this.root.visible;
     this.root.visible = true;
     this.root.resizeModeActive = true;
@@ -80,24 +129,29 @@ export class Resize {
 
   deactivate() {
     this.active = false;
+    this.root.shortcuts = [...this._baseShortcuts];
     this.root.resizeModeActive = false;
     this.root.resizeOverlayGeometry = undefined;
     this.root.visible = this._savedRootVisible;
   }
 
   increaseWidth() {
+    if (!this.active) return;
     this._resizeEdge(Qt.RightEdge, this._step());
   }
 
   decreaseWidth() {
+    if (!this.active) return;
     this._resizeEdge(Qt.RightEdge, -this._step());
   }
 
   increaseHeight() {
+    if (!this.active) return;
     this._resizeEdge(Qt.BottomEdge, this._step());
   }
 
   decreaseHeight() {
+    if (!this.active) return;
     this._resizeEdge(Qt.BottomEdge, -this._step());
   }
 }
