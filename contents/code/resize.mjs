@@ -1,10 +1,18 @@
 export class Resize {
-  constructor(workspace, config, { blocklist, tiles, windows }) {
+  constructor(workspace, config, root, { blocklist, tiles, windows }) {
     this.workspace = workspace;
     this.config = config;
+    this.root = root;
     this.blocklist = blocklist;
     this.tiles = tiles;
     this.windows = windows;
+    this.active = false;
+    this._savedShortcuts = [];
+    this._savedRootVisible = false;
+  }
+
+  _step() {
+    return this.config.resizeStep || 50;
   }
 
   _getActiveWindow() {
@@ -28,7 +36,6 @@ export class Resize {
       tile.resizeByPixels(delta, edge);
       this.windows.extendCurrentDesktop(false);
     } else {
-      // Floating window fallback
       const geo = win.frameGeometry;
       if (edge === Qt.RightEdge || edge === Qt.LeftEdge) {
         const newWidth = Math.max(200, geo.width + delta);
@@ -38,21 +45,109 @@ export class Resize {
         win.frameGeometry = Qt.rect(geo.x, geo.y, geo.width, newHeight);
       }
     }
+    this._updateOverlay();
+  }
+
+  _updateOverlay() {
+    const win = this._getActiveWindow();
+    if (!win) return;
+    const tile = this._getTile(win);
+    if (tile) {
+      this.root.resizeOverlayGeometry = tile.absoluteGeometry;
+    } else {
+      const geo = win.frameGeometry;
+      this.root.resizeOverlayGeometry = Qt.rect(geo.x, geo.y, geo.width, geo.height);
+    }
+  }
+
+  toggle() {
+    if (this.active) {
+      this.deactivate();
+    } else {
+      this.activate();
+    }
+  }
+
+  activate() {
+    const win = this._getActiveWindow();
+    if (!win) return;
+
+    this.active = true;
+    this._savedShortcuts = [...this.root.shortcuts];
+
+    const step = this._step();
+    this.root.shortcuts = [
+      ...this._savedShortcuts,
+      {
+        name: "FluidtileResizeIncreaseWidth",
+        text: "流体平铺 | 调整模式：增大宽度",
+        sequence: "Right",
+        callback: () => this.increaseWidth(),
+      },
+      {
+        name: "FluidtileResizeDecreaseWidth",
+        text: "流体平铺 | 调整模式：减小宽度",
+        sequence: "Left",
+        callback: () => this.decreaseWidth(),
+      },
+      {
+        name: "FluidtileResizeIncreaseHeight",
+        text: "流体平铺 | 调整模式：增大高度",
+        sequence: "Up",
+        callback: () => this.increaseHeight(),
+      },
+      {
+        name: "FluidtileResizeDecreaseHeight",
+        text: "流体平铺 | 调整模式：减小高度",
+        sequence: "Down",
+        callback: () => this.decreaseHeight(),
+      },
+      {
+        name: "FluidtileResizeExit",
+        text: "流体平铺 | 调整模式：退出",
+        sequence: "Escape",
+        callback: () => this.deactivate(),
+      },
+      {
+        name: "FluidtileResizeExitEnter",
+        text: "流体平铺 | 调整模式：退出",
+        sequence: "Return",
+        callback: () => this.deactivate(),
+      },
+    ];
+
+    this._savedRootVisible = this.root.visible;
+    this.root.visible = true;
+    this.root.resizeModeActive = true;
+    this._updateOverlay();
+  }
+
+  deactivate() {
+    this.active = false;
+    this.root.shortcuts = [...this._savedShortcuts];
+    this._savedShortcuts = [];
+    this.root.resizeModeActive = false;
+    this.root.resizeOverlayGeometry = undefined;
+    this.root.visible = this._savedRootVisible;
   }
 
   increaseWidth() {
-    this._resizeEdge(Qt.RightEdge, this.config.resizeStep || 50);
+    if (!this.active) return;
+    this._resizeEdge(Qt.RightEdge, this._step());
   }
 
   decreaseWidth() {
-    this._resizeEdge(Qt.RightEdge, -(this.config.resizeStep || 50));
+    if (!this.active) return;
+    this._resizeEdge(Qt.RightEdge, -this._step());
   }
 
   increaseHeight() {
-    this._resizeEdge(Qt.BottomEdge, this.config.resizeStep || 50);
+    if (!this.active) return;
+    this._resizeEdge(Qt.BottomEdge, this._step());
   }
 
   decreaseHeight() {
-    this._resizeEdge(Qt.BottomEdge, -(this.config.resizeStep || 50));
+    if (!this.active) return;
+    this._resizeEdge(Qt.BottomEdge, -this._step());
   }
 }

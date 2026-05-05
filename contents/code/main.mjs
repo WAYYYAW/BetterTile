@@ -42,7 +42,7 @@ export class Engine {
       this.windowsUI.windowCompact,
       this.windowsUI.windowPopup,
     );
-    this.classes.resize = new Resize(workspace, config, this.classes);
+    this.classes.resize = new Resize(workspace, config, root, this.classes);
     this.classes.shortcuts = new Shortcuts(
       workspace,
       config,

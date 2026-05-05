@@ -15,4 +15,6 @@ Item {
     property color tileBackground: Kirigami.ColorUtils.tintWithAlpha("transparent", Kirigami.Theme.backgroundColor, 0.60)
 
     property color tileBorder: Kirigami.ColorUtils.tintWithAlpha("transparent", Kirigami.Theme.textColor, 0.54)
+
+    property color resizeBorder: Kirigami.Theme.focusColor
 }
