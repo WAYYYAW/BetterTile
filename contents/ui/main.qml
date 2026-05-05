@@ -12,6 +12,7 @@ Window {
     property var tileActive: undefined
     property var resizeOverlayGeometry: undefined
     property bool resizeModeActive: false
+    property var floatingGeometries: []
     property var screens: Workspace.screens
     property var layouts: ({
             popup: [],
@@ -38,6 +39,17 @@ Window {
                 functionTrigger();
             }
         }
+    }
+
+    function updateFloatingIndicators() {
+        if (!root.engine || !root.engine.classes || !root.engine.classes.blocklist) return;
+        const blocked = root.engine.classes.blocklist.getShortcutBlockedWindows(Workspace);
+        var geos = [];
+        for (var i = 0; i < blocked.length; i++) {
+            var fg = blocked[i].frameGeometry;
+            geos.push({ x: fg.x, y: fg.y, width: fg.width, height: fg.height });
+        }
+        root.floatingGeometries = geos;
     }
 
     // Load user config
@@ -85,18 +97,22 @@ Window {
         function onWindowAdded(client) {
             root.engine.setSignalsToWindow(client);
             root.engine.onWindowAdded(client);
+            root.updateFloatingIndicators();
         }
 
         function onWindowRemoved(client) {
             root.engine.onWindowRemoved(client);
+            root.updateFloatingIndicators();
         }
 
         function onCurrentDesktopChanged() {
             root.engine.onCurrentDesktopChanged();
+            root.updateFloatingIndicators();
         }
 
         function onDesktopsChanged() {
             root.engine.onDesktopsChanged();
+            root.updateFloatingIndicators();
         }
     }
 
@@ -155,5 +171,19 @@ Window {
         visible: root.resizeModeActive
         theme: theme
         overlayGeometry: root.resizeOverlayGeometry
+    }
+
+    Repeater {
+        model: root.floatingGeometries
+        delegate: Rectangle {
+            x: modelData.x
+            y: modelData.y
+            width: modelData.width
+            height: modelData.height
+            color: "transparent"
+            border.color: theme.floatingBorder || "#ff8800"
+            border.width: 2
+            radius: theme.radius || 4
+        }
     }
 }

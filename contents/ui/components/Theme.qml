@@ -17,4 +17,6 @@ Item {
     property color tileBorder: Kirigami.ColorUtils.tintWithAlpha("transparent", Kirigami.Theme.textColor, 0.54)
 
     property color resizeBorder: Kirigami.Theme.focusColor
+
+    property color floatingBorder: "#ff8800"
 }

@@ -7,13 +7,14 @@ export class Shortcuts {
         text: "流体平铺 | 将窗口加入/移出黑名单",
         sequence: "Meta+F",
         callback: () => {
-          ui.hide(3, true);
+          ui.hide(3, false);
           const added = blocklist.toggleWindow(workspace.activeWindow);
           if (added === false) {
             windows.setEmptyTile();
           } else {
             windows.extendCurrentDesktop();
           }
+          root.updateFloatingIndicators();
         },
       },
       {

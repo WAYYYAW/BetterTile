@@ -16,6 +16,12 @@ export class Blocklist {
     return this.appsBlockByShortcut.remove(window);
   }
 
+  getShortcutBlockedWindows(workspace) {
+    return workspace.stackingOrder.filter(
+      (w) => this.appsBlockByShortcut.exists(w) === true,
+    );
+  }
+
   toggleWindow(window) {
     const isDeleted = this.removeWindow(window);
 
