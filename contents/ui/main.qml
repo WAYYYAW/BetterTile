@@ -10,6 +10,7 @@ Window {
     property var shortcuts: []
     property var timers: []
     property var tileActive: undefined
+    property var resizeObj: undefined
     property var resizeOverlayGeometry: undefined
     property bool resizeModeActive: false
     property var screens: Workspace.screens
@@ -155,5 +156,6 @@ Window {
         visible: root.resizeModeActive
         theme: theme
         overlayGeometry: root.resizeOverlayGeometry
+        resizeObj: root.resizeObj
     }
 }

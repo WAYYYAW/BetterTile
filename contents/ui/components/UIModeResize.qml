@@ -5,9 +5,38 @@ Rectangle {
     color: "transparent"
     anchors.fill: parent
     visible: false
+    focus: true
 
     property var overlayGeometry: undefined
     property var theme: ({})
+    property var resizeObj: undefined
+
+    Keys.onPressed: function(event) {
+        if (!resizeObj || !resizeObj.active) return;
+
+        switch (event.key) {
+            case Qt.Key_Right:
+                resizeObj.increaseWidth();
+                break;
+            case Qt.Key_Left:
+                resizeObj.decreaseWidth();
+                break;
+            case Qt.Key_Up:
+                resizeObj.increaseHeight();
+                break;
+            case Qt.Key_Down:
+                resizeObj.decreaseHeight();
+                break;
+            case Qt.Key_Escape:
+            case Qt.Key_Return:
+            case Qt.Key_Enter:
+                resizeObj.deactivate();
+                break;
+            default:
+                return;
+        }
+        event.accepted = true;
+    }
 
     Rectangle {
         id: frame
