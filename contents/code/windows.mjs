@@ -90,7 +90,28 @@ export class Windows {
   }
 
   //Extend window if empty space is available
-  extend(windows, panelsSize) {
+  extend(windows, panelsSize, skipSingleMargin = false) {
+    if (
+      skipSingleMargin !== true &&
+      windows.length === 1 &&
+      windows[0].minimized === false
+    ) {
+      const win = windows[0];
+      const tileRef = win.tile || win._tileShadow;
+      if (tileRef) {
+        win._avoidMaximizeTrigger = true;
+        win.setMaximize(false, false);
+        const geo = tileRef.absoluteGeometry;
+        const mx = Math.round(geo.width * 0.125);
+        const my = Math.round(geo.height * 0.125);
+        win.frameGeometry = Qt.rect(
+          geo.x + mx, geo.y + my,
+          geo.width - mx * 2, geo.height - my * 2,
+        );
+        return;
+      }
+    }
+
     if (
       this.config.maximizeExtend === true &&
       windows.length === 1 &&
@@ -343,7 +364,7 @@ export class Windows {
   }
 
   //Extend all windows in the current desktop
-  extendCurrentDesktop(screenAll = false) {
+  extendCurrentDesktop(screenAll = false, skipSingleMargin = false) {
     let screens = [this.workspace.activeScreen];
 
     if (screenAll === true) {
@@ -357,7 +378,7 @@ export class Windows {
         continue;
       }
 
-      this.extend(windows, this.userspace.getPanelsSize(undefined, screen));
+      this.extend(windows, this.userspace.getPanelsSize(undefined, screen), skipSingleMargin);
     }
   }
 

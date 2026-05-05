@@ -48,7 +48,7 @@ export class Resize {
       ));
       const edge = (geo.x + geo.width >= maxRight - 1) ? Qt.LeftEdge : Qt.RightEdge;
       tile.resizeByPixels(delta, edge);
-      this.windows.extendCurrentDesktop(false);
+      this.windows.extendCurrentDesktop(false, true);
     } else {
       const fg = win.frameGeometry;
       const newWidth = Math.max(200, fg.width + delta);
@@ -70,7 +70,7 @@ export class Resize {
       ));
       const edge = (geo.y + geo.height >= maxBottom - 1) ? Qt.TopEdge : Qt.BottomEdge;
       tile.resizeByPixels(delta, edge);
-      this.windows.extendCurrentDesktop(false);
+      this.windows.extendCurrentDesktop(false, true);
     } else {
       const fg = win.frameGeometry;
       const newHeight = Math.max(150, fg.height + delta);
