@@ -35,23 +35,60 @@ export class Resize {
     return win.tile || win._tileShadow || null;
   }
 
-  _resizeEdge(edge, delta) {
+  _resizeWidth(delta) {
     const win = this._getActiveWindow();
     if (!win) return;
     const tile = this._getTile(win);
 
     if (tile) {
-      tile.resizeByPixels(delta, edge);
+      const geo = tile.absoluteGeometry;
+      if (delta > 0) {
+        const allTiles = this.tiles.getTilesCurrentDesktop();
+        const maxRight = Math.max(...allTiles.map(
+          t => t.absoluteGeometry.x + t.absoluteGeometry.width
+        ));
+        if (geo.x + geo.width >= maxRight - 1) {
+          tile.resizeByPixels(delta, Qt.LeftEdge);
+        } else {
+          tile.resizeByPixels(delta, Qt.RightEdge);
+        }
+      } else {
+        tile.resizeByPixels(delta, Qt.RightEdge);
+      }
       this.windows.extendCurrentDesktop(false);
     } else {
-      const geo = win.frameGeometry;
-      if (edge === Qt.RightEdge || edge === Qt.LeftEdge) {
-        const newWidth = Math.max(200, geo.width + delta);
-        win.frameGeometry = Qt.rect(geo.x, geo.y, newWidth, geo.height);
+      const fg = win.frameGeometry;
+      const newWidth = Math.max(200, fg.width + delta);
+      win.frameGeometry = Qt.rect(fg.x, fg.y, newWidth, fg.height);
+    }
+    this._updateOverlay();
+  }
+
+  _resizeHeight(delta) {
+    const win = this._getActiveWindow();
+    if (!win) return;
+    const tile = this._getTile(win);
+
+    if (tile) {
+      const geo = tile.absoluteGeometry;
+      if (delta > 0) {
+        const allTiles = this.tiles.getTilesCurrentDesktop();
+        const maxBottom = Math.max(...allTiles.map(
+          t => t.absoluteGeometry.y + t.absoluteGeometry.height
+        ));
+        if (geo.y + geo.height >= maxBottom - 1) {
+          tile.resizeByPixels(delta, Qt.TopEdge);
+        } else {
+          tile.resizeByPixels(delta, Qt.BottomEdge);
+        }
       } else {
-        const newHeight = Math.max(150, geo.height + delta);
-        win.frameGeometry = Qt.rect(geo.x, geo.y, geo.width, newHeight);
+        tile.resizeByPixels(delta, Qt.BottomEdge);
       }
+      this.windows.extendCurrentDesktop(false);
+    } else {
+      const fg = win.frameGeometry;
+      const newHeight = Math.max(150, fg.height + delta);
+      win.frameGeometry = Qt.rect(fg.x, fg.y, fg.width, newHeight);
     }
     this._updateOverlay();
   }
@@ -140,21 +177,21 @@ Item {
 
   increaseWidth() {
     if (!this.active) return;
-    this._resizeEdge(Qt.RightEdge, this._step());
+    this._resizeWidth(this._step());
   }
 
   decreaseWidth() {
     if (!this.active) return;
-    this._resizeEdge(Qt.RightEdge, -this._step());
+    this._resizeWidth(-this._step());
   }
 
   increaseHeight() {
     if (!this.active) return;
-    this._resizeEdge(Qt.BottomEdge, this._step());
+    this._resizeHeight(this._step());
   }
 
   decreaseHeight() {
     if (!this.active) return;
-    this._resizeEdge(Qt.BottomEdge, -this._step());
+    this._resizeHeight(-this._step());
   }
 }
