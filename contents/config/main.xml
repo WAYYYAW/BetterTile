@@ -16,12 +16,12 @@
         </entry>
         <entry name="WindowOverflowAction" type="Enum">
             <choices>
-                <choice name="0"><label>Create new virtual desktop: after the current desktop</label></choice>
-                <choice name="1"><label>Create new virtual desktop: before the current desktop</label></choice>
-                <choice name="2"><label>Create new virtual desktop: at End</label></choice>
-                <choice name="3"><label>Create new virtual desktop: at Beginning</label></choice>
-                <choice name="4"><label>Switch to next tile layout</label></choice>
-                <choice name="5"><label>Just let it float</label></choice>
+                <choice name="0"><label>创建新虚拟桌面：在当前桌面之后</label></choice>
+                <choice name="1"><label>创建新虚拟桌面：在当前桌面之前</label></choice>
+                <choice name="2"><label>创建新虚拟桌面：在末尾</label></choice>
+                <choice name="3"><label>创建新虚拟桌面：在开头</label></choice>
+                <choice name="4"><label>切换到下一个平铺布局</label></choice>
+                <choice name="5"><label>允许浮动</label></choice>
             </choices>
             <default>0</default>
         </entry>
@@ -48,22 +48,22 @@
         </entry>
         <entry name="UIMode" type="Enum">
             <choices>
-                <choice name="0"><label>Fullscreen</label></choice>
-                <choice name="1"><label>Compact</label></choice>
+                <choice name="0"><label>全屏</label></choice>
+                <choice name="1"><label>紧凑</label></choice>
             </choices>
             <default>0</default>
         </entry>
         <entry name="UIWindowCompactPosition" type="Enum">
             <choices>
-                <choice name="0"><label>Center of the screen</label></choice>
-                <choice name="1"><label>Top of the screen</label></choice>
-                <choice name="2"><label>Bottom of the screen</label></choice>
-                <choice name="3"><label>Cursor position</label></choice>
+                <choice name="0"><label>屏幕中央</label></choice>
+                <choice name="1"><label>屏幕顶部</label></choice>
+                <choice name="2"><label>屏幕底部</label></choice>
+                <choice name="3"><label>光标位置</label></choice>
             </choices>
             <default>1</default>
         </entry>
         <entry name="TilesPriority" type="StringList">
-            <default>Width,Height,Top,Left,Right,Bottom</default>
+            <default>宽度,高度,顶部,左侧,右侧,底部</default>
         </entry>
         <entry name="LayoutDefault" type="Enum">
             <choices>
@@ -77,6 +77,9 @@
             <default>1</default>
         </entry>
         <entry name="LayoutCustom" type="String">
+        </entry>
+        <entry name="ResizeStep" type="Int">
+            <default>50</default>
         </entry>
         <entry name="AppsBlocklist" type="StringList">
             <default>moonlight,org.kde.xwaylandvideobridge,wl-paste,wl-copy,org.kde.kded6,qt-sudo,org.kde.polkit-kde-authentication-agent-1,org.kde.spectacle,kcm_kwinrules,org.freedesktop.impl.portal.desktop.kde,krunner,plasmashell,org.kde.plasmashell,kwin_wayland,ksmserver-logout-greeter</default>

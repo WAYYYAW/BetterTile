@@ -1,10 +1,10 @@
 export class Shortcuts {
-  constructor(workspace, config, root, { blocklist, windows, tiles, ui }) {
+  constructor(workspace, config, root, { blocklist, windows, tiles, ui, resize }) {
     this.layoutIndex = config.layoutDefault - 1;
     root.shortcuts = [
       {
         name: "FluidtileToggleWindowBlocklist",
-        text: "Fluid tile | Toggle window to blocklist",
+        text: "流体平铺 | 将窗口加入/移出黑名单",
         sequence: "Meta+F",
         callback: () => {
           ui.hide(3, true);
@@ -18,7 +18,7 @@ export class Shortcuts {
       },
       {
         name: "FluidtileChangeTileLayout",
-        text: "Fluid tile | Change tile layout",
+        text: "流体平铺 | 更改平铺布局",
         sequence: "Meta+Alt+F",
         callback: () => {
           const layouts = tiles.getDefaultLayouts();
@@ -34,6 +34,30 @@ export class Shortcuts {
 
           ui.show(2);
         },
+      },
+      {
+        name: "FluidtileIncreaseWidth",
+        text: "流体平铺 | 增大窗口宽度",
+        sequence: "Meta+Shift+Right",
+        callback: () => resize.increaseWidth(),
+      },
+      {
+        name: "FluidtileDecreaseWidth",
+        text: "流体平铺 | 减小窗口宽度",
+        sequence: "Meta+Shift+Left",
+        callback: () => resize.decreaseWidth(),
+      },
+      {
+        name: "FluidtileIncreaseHeight",
+        text: "流体平铺 | 增大窗口高度",
+        sequence: "Meta+Shift+Up",
+        callback: () => resize.increaseHeight(),
+      },
+      {
+        name: "FluidtileDecreaseHeight",
+        text: "流体平铺 | 减小窗口高度",
+        sequence: "Meta+Shift+Down",
+        callback: () => resize.decreaseHeight(),
       },
     ];
   }

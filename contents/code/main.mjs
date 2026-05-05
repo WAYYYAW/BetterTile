@@ -1,4 +1,5 @@
 import { Blocklist } from "./blocklist.mjs";
+import { Resize } from "./resize.mjs";
 import { Shortcuts } from "./shortcuts.mjs";
 import { Tiles } from "./tiles.mjs";
 import { UI } from "./ui.mjs";
@@ -41,6 +42,7 @@ export class Engine {
       this.windowsUI.windowCompact,
       this.windowsUI.windowPopup,
     );
+    this.classes.resize = new Resize(workspace, config, this.classes);
     this.classes.shortcuts = new Shortcuts(
       workspace,
       config,
