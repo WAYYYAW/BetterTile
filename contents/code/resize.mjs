@@ -8,9 +8,15 @@ export class Resize {
     this.windows = windows;
     this.active = false;
     this._savedRootVisible = false;
-
-    this._flagsNormal = Qt.FramelessWindowHint | Qt.WindowTransparentForInput | Qt.WindowStaysOnTopHint | Qt.BypassWindowManagerHint;
-    this._flagsCapture = Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.BypassWindowManagerHint;
+    this._dynamicObjects = [];
+    this._shortcutDefs = [
+      { name: "FluidtileResizeRight",  text: "流体平铺 | 调整模式：增大宽度", sequence: "Right" },
+      { name: "FluidtileResizeLeft",   text: "流体平铺 | 调整模式：减小宽度", sequence: "Left" },
+      { name: "FluidtileResizeUp",     text: "流体平铺 | 调整模式：增大高度", sequence: "Up" },
+      { name: "FluidtileResizeDown",   text: "流体平鋪 | 调整模式：减小高度", sequence: "Down" },
+      { name: "FluidtileResizeExitEsc",  text: "流体平鋪 | 调整模式：退出", sequence: "Escape" },
+      { name: "FluidtileResizeExitEnter", text: "流体平鋪 | 调整模式：退出", sequence: "Return" },
+    ];
   }
 
   _step() {
@@ -62,6 +68,47 @@ export class Resize {
     }
   }
 
+  _createDynamicShortcuts() {
+    this._dynamicObjects = [];
+    for (const def of this._shortcutDefs) {
+      let callback;
+      switch (def.name) {
+        case "FluidtileResizeRight":  callback = () => this.increaseWidth(); break;
+        case "FluidtileResizeLeft":   callback = () => this.decreaseWidth(); break;
+        case "FluidtileResizeUp":     callback = () => this.increaseHeight(); break;
+        case "FluidtileResizeDown":   callback = () => this.decreaseHeight(); break;
+        default:                      callback = () => this.deactivate(); break;
+      }
+
+      const qml = `
+import QtQuick
+import org.kde.kwin
+Item {
+  property var cb
+  ShortcutHandler {
+    name: "${def.name}"
+    text: "${def.text}"
+    sequence: "${def.sequence}"
+    onActivated: { cb() }
+  }
+}`;
+      const obj = Qt.createQmlObject(qml, this.root, "resizeShortcut");
+      if (obj) {
+        obj.cb = callback;
+        this._dynamicObjects.push(obj);
+      }
+    }
+  }
+
+  _destroyDynamicShortcuts() {
+    for (const obj of this._dynamicObjects) {
+      if (obj && typeof obj.destroy === "function") {
+        obj.destroy();
+      }
+    }
+    this._dynamicObjects = [];
+  }
+
   toggle() {
     if (this.active) {
       this.deactivate();
@@ -75,8 +122,7 @@ export class Resize {
     if (!win) return;
 
     this.active = true;
-    this.root.resizeObj = this;
-    this.root.flags = this._flagsCapture;
+    this._createDynamicShortcuts();
 
     this._savedRootVisible = this.root.visible;
     this.root.visible = true;
@@ -86,8 +132,7 @@ export class Resize {
 
   deactivate() {
     this.active = false;
-    this.root.resizeObj = undefined;
-    this.root.flags = this._flagsNormal;
+    this._destroyDynamicShortcuts();
     this.root.resizeModeActive = false;
     this.root.resizeOverlayGeometry = undefined;
     this.root.visible = this._savedRootVisible;
