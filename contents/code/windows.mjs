@@ -97,19 +97,18 @@ export class Windows {
       windows[0].minimized === false
     ) {
       const win = windows[0];
-      const tileRef = win.tile || win._tileShadow;
-      if (tileRef) {
-        win._avoidMaximizeTrigger = true;
-        win.setMaximize(false, false);
-        const geo = tileRef.absoluteGeometry;
-        const mx = Math.round(geo.width * 0.125);
-        const my = Math.round(geo.height * 0.125);
-        win.frameGeometry = Qt.rect(
-          geo.x + mx, geo.y + my,
-          geo.width - mx * 2, geo.height - my * 2,
-        );
-        return;
-      }
+      win._avoidMaximizeTrigger = true;
+      win.setMaximize(false, false);
+      const wa = panelsSize.workarea;
+      const sw = wa.right - wa.left;
+      const sh = wa.bottom - wa.top;
+      const mx = Math.round(sw * 0.125);
+      const my = Math.round(sh * 0.125);
+      win.frameGeometry = Qt.rect(
+        wa.left + mx, wa.top + my,
+        sw - mx * 2, sh - my * 2,
+      );
+      return;
     }
 
     if (
