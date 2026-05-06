@@ -156,7 +156,7 @@ export class Windows {
       return;
     }
 
-    // Multi-window: sync frameGeometry to tile bounds with padding
+    // Multi-window: sync frameGeometry to tile bounds using panel-aware setGeometry
     for (var i = 0; i < windows.length; i++) {
       var w = windows[i];
       w._avoidMaximizeExtend = false;
@@ -167,15 +167,7 @@ export class Windows {
       if (!tileRef) continue;
 
       w.setMaximize(false, false);
-
-      var geo = tileRef.absoluteGeometry;
-      var tilePad = tileRef.padding || 0;
-      w.frameGeometry = Qt.rect(
-        geo.x + tilePad,
-        geo.y + tilePad,
-        geo.width - tilePad * 2,
-        geo.height - tilePad * 2,
-      );
+      this.setGeometry(w, {}, panelsSize);
     }
   }
 
