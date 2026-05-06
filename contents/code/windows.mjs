@@ -156,7 +156,8 @@ export class Windows {
       return;
     }
 
-    // Multi-window: sync frameGeometry to tile bounds using panel-aware setGeometry
+    // Multi-window: clip tile geometry to workarea (avoid panels)
+    var wa = panelsSize.workarea;
     for (var i = 0; i < windows.length; i++) {
       var w = windows[i];
       w._avoidMaximizeExtend = false;
@@ -167,7 +168,14 @@ export class Windows {
       if (!tileRef) continue;
 
       w.setMaximize(false, false);
-      this.setGeometry(w, {}, panelsSize);
+
+      var geo = tileRef.absoluteGeometry;
+      var pad = tileRef.padding || 0;
+      var left = Math.max(geo.x + pad, wa.left);
+      var top = Math.max(geo.y + pad, wa.top);
+      var right = Math.min(geo.x + geo.width - pad, wa.right);
+      var bottom = Math.min(geo.y + geo.height - pad, wa.bottom);
+      w.frameGeometry = Qt.rect(left, top, right - left, bottom - top);
     }
   }
 
