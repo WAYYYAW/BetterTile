@@ -46,30 +46,15 @@ Window {
             appsBlocklist: KWin.readConfig("AppsBlocklist", "moonlight,org.kde.xwaylandvideobridge,wl-paste,wl-copy,org.kde.kded6,qt-sudo,org.kde.polkit-kde-authentication-agent-1,org.kde.spectacle,kcm_kwinrules,org.freedesktop.impl.portal.desktop.kde,krunner,plasmashell,org.kde.plasmashell,kwin_wayland,ksmserver-logout-greeter"),
             tilesPriority: KWin.readConfig("TilesPriority", "宽度,高度,顶部,左侧,右侧,底部").split(","),
             maximizeExtend: KWin.readConfig("MaximizeExtend", true),
-            windowsOrderOpen: KWin.readConfig("WindowsOrderOpen", false),
-            windowsOrderClose: KWin.readConfig("WindowsOrderClose", false),
             windowsExtendTileChangedDelay: KWin.readConfig("WindowsExtendTileChangedDelay", 350),
-            windowOverflowAction: KWin.readConfig("WindowOverflowAction", 0),
-            windowOverflowPerScreen: KWin.readConfig("WindowOverflowPerScreen", false),
-            desktopRemove: KWin.readConfig("DesktopRemove", false),
-            desktopRemoveMin: KWin.readConfig("DesktopRemoveMin", 1),
-            desktopRemoveDelay: KWin.readConfig("DesktopRemoveDelay", 300),
-            desktopExtra: KWin.readConfig("DesktopExtra", false),
             modalsIgnore: KWin.readConfig("ModalsIgnore", true),
-            layoutDefault: KWin.readConfig("LayoutDefault", 2),
             UIWindowCursor: KWin.readConfig("UIWindowCursor", false),
             UIMode: KWin.readConfig("UIMode", 0),
             UIWindowCompactPosition: KWin.readConfig("UIWindowCompactPosition", 1),
             splitDirection: KWin.readConfig("SplitDirection", 1),
-            resizeStep: KWin.readConfig("ResizeStep", 50)
+            resizeStep: KWin.readConfig("ResizeStep", 50),
+            floatingOpacity: KWin.readConfig("FloatingOpacity", 82) / 100
         };
-
-        try {
-            const layoutCustom = KWin.readConfig("LayoutCustom", "");
-            config.layoutCustom = layoutCustom ? JSON.parse(layoutCustom) : undefined;
-        } catch (error) {
-            console.log("LayoutCustom variable error: " + error);
-        }
 
         engine = new Logic.Engine(Workspace, config, {
             root,

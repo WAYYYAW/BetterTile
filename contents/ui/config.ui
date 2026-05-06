@@ -1,495 +1,139 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <author>Serroda</author>
+ <author>BetterTile</author>
  <class>Form</class>
  <widget class="QWidget" name="Form">
-  <property name="windowModality">
-   <enum>Qt::WindowModality::WindowModal</enum>
-  </property>
   <property name="geometry">
    <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>605</width>
-    <height>660</height>
+    <x>0</x><y>0</y>
+    <width>520</width><height>480</height>
    </rect>
   </property>
-  <property name="minimumSize">
-   <size>
-    <width>605</width>
-    <height>378</height>
-   </size>
-  </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>BetterTile</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3">
-   <property name="spacing">
-    <number>12</number>
-   </property>
-   <property name="topMargin">
-    <number>12</number>
-   </property>
-   <property name="bottomMargin">
-    <number>12</number>
-   </property>
+  <layout class="QVBoxLayout" name="vlayout">
+   <property name="spacing"><number>10</number></property>
+
+   <!-- 平铺行为 -->
    <item>
-    <widget class="QLabel" name="titleOpen">
-     <property name="font">
-      <font>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="locale">
-      <locale language="English" country="Eswatini"/>
-     </property>
-     <property name="text">
-      <string>Window triggers</string>
-     </property>
+    <widget class="QLabel" name="titleBehavior">
+     <property name="font"><font><bold>true</bold></font></property>
+     <property name="text"><string>平铺行为</string></property>
     </widget>
    </item>
    <item>
-    <widget class="QTabWidget" name="tabWidget_2">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>500</width>
-       <height>174</height>
-      </size>
-     </property>
-     <property name="toolTip">
-      <string/>
-     </property>
-     <property name="layoutDirection">
-      <enum>Qt::LayoutDirection::LeftToRight</enum>
-     </property>
-     <property name="locale">
-      <locale language="English" country="Spain"/>
-     </property>
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
-     <widget class="QWidget" name="opened">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="locale">
-       <locale language="English" country="Spain"/>
-      </property>
-      <attribute name="title">
-       <string>Opened</string>
-      </attribute>
-      <layout class="QFormLayout" name="formLayout_3">
-       <property name="fieldGrowthPolicy">
-        <enum>QFormLayout::FieldGrowthPolicy::ExpandingFieldsGrow</enum>
-       </property>
-       <property name="rowWrapPolicy">
-        <enum>QFormLayout::RowWrapPolicy::DontWrapRows</enum>
-       </property>
-       <property name="labelAlignment">
-        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
-       </property>
-       <property name="horizontalSpacing">
-        <number>6</number>
-       </property>
-       <property name="verticalSpacing">
-        <number>12</number>
-       </property>
-       <item row="1" column="0">
-        <widget class="QCheckBox" name="kcfg_WindowOverflowPerScreen">
-         <property name="text">
-          <string>Trigger overflow per screen (Only works when &quot;Switch to next tile layout&quot; is selected)</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QCheckBox" name="kcfg_ModalsIgnore">
-         <property name="toolTip">
-          <string>Only works if the window is transient</string>
-         </property>
-         <property name="statusTip">
-          <string/>
-         </property>
-         <property name="locale">
-          <locale language="English" country="Eswatini"/>
-         </property>
-         <property name="text">
-          <string>Ignore modals opened by an application</string>
-         </property>
-         <property name="autoRepeat">
-          <bool>false</bool>
-         </property>
-         <property name="autoExclusive">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QCheckBox" name="kcfg_WindowsOrderOpen">
-         <property name="text">
-          <string>Rearrange windows</string>
-         </property>
-        </widget>
-       </item>
+    <widget class="QTabWidget" name="tabBehavior">
+     <property name="currentIndex"><number>0</number></property>
+     <widget class="QWidget" name="tabSplit">
+      <attribute name="title"><string>分割</string></attribute>
+      <layout class="QFormLayout" name="formSplit">
+       <property name="verticalSpacing"><number>10</number></property>
        <item row="0" column="0">
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <property name="spacing">
-          <number>12</number>
-         </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
+        <widget class="QLabel" name="labelSplitDir">
+         <property name="text"><string>默认分割方向</string></property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="kcfg_SplitDirection">
+         <item><property name="text"><string>水平 (左右)</string></property></item>
+         <item><property name="text"><string>垂直 (上下)</string></property></item>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelResizeStep">
+         <property name="text"><string>调整步长</string></property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSpinBox" name="kcfg_ResizeStep">
+         <property name="suffix"><string> 像素</string></property>
+         <property name="minimum"><number>10</number></property>
+         <property name="maximum"><number>500</number></property>
+         <property name="singleStep"><number>10</number></property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tabFloating">
+      <attribute name="title"><string>浮动窗口</string></attribute>
+      <layout class="QFormLayout" name="formFloating">
+       <property name="verticalSpacing"><number>10</number></property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelFloatingOpacity">
+         <property name="text"><string>浮动窗口透明度</string></property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QSpinBox" name="kcfg_FloatingOpacity">
+         <property name="suffix"><string>%</string></property>
+         <property name="minimum"><number>30</number></property>
+         <property name="maximum"><number>100</number></property>
+         <property name="singleStep"><number>5</number></property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tabGeneral">
+      <attribute name="title"><string>通用</string></attribute>
+      <layout class="QVBoxLayout" name="vlayoutGeneral">
+       <item>
+        <widget class="QCheckBox" name="kcfg_MaximizeExtend">
+         <property name="text"><string>最后一个窗口最大化 (而非 75% 居中)</string></property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="kcfg_ModalsIgnore">
+         <property name="text"><string>忽略应用程序创建的模态窗口</string></property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="kcfg_UIWindowCursor">
+         <property name="text"><string>UI 可见时使用窗口位置代替光标 (推荐触屏)</string></property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="hlayoutDelay">
          <item>
-          <widget class="QLabel" name="label_4">
-           <property name="text">
-            <string>Window Overflow Action:</string>
-           </property>
+          <widget class="QLabel" name="labelDelay">
+           <property name="text"><string>跨屏幕移动后扩展延迟</string></property>
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="kcfg_WindowOverflowAction">
-           <item>
-            <property name="text">
-             <string>Create new virtual desktop: after the current desktop</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Create new virtual desktop: before the current desktop</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Create new virtual desktop: at End</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Create new virtual desktop: at Beginning</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Switch to next tile layout</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Just let it float</string>
-            </property>
-           </item>
+          <widget class="QSpinBox" name="kcfg_WindowsExtendTileChangedDelay">
+           <property name="suffix"><string> 毫秒</string></property>
+           <property name="maximum"><number>5000</number></property>
+           <property name="singleStep"><number>100</number></property>
           </widget>
          </item>
         </layout>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="closed">
-      <property name="layoutDirection">
-       <enum>Qt::LayoutDirection::LeftToRight</enum>
-      </property>
-      <attribute name="title">
-       <string>Closed</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_delay">
-         <property name="toolTip">
-          <string>Case: Applications that open a window and, when an action is performed,
-close the window and open another window (Chrome profile selector).
-This timer avoid crash wayland, beacuse the process try open the window
- in the deleted virtual desktop</string>
-         </property>
-         <property name="text">
-          <string>Delay to remove virtual desktop</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QCheckBox" name="kcfg_WindowsOrderClose">
-         <property name="layoutDirection">
-          <enum>Qt::LayoutDirection::LeftToRight</enum>
-         </property>
-         <property name="locale">
-          <locale language="English" country="Eswatini"/>
-         </property>
-         <property name="text">
-          <string>Rearrange windows</string>
-         </property>
-         <property name="tristate">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_DesktopMin">
-         <property name="toolTip">
-          <string/>
-         </property>
-         <property name="text">
-          <string>Minimum number of virtual desktops </string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QSpinBox" name="kcfg_DesktopRemoveMin">
-         <property name="toolTip">
-          <string/>
-         </property>
-         <property name="minimum">
-          <number>1</number>
-         </property>
-         <property name="maximum">
-          <number>99</number>
-         </property>
-         <property name="singleStep">
-          <number>1</number>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QSpinBox" name="kcfg_DesktopRemoveDelay">
-         <property name="toolTip">
-          <string>Case: Applications that open a window and, when an action is performed,
-close the window and open another window (Chrome profile selector).
-This timer avoid crash wayland, beacuse the process try open the window
- in the deleted virtual desktop</string>
-         </property>
-         <property name="suffix">
-          <string> milliseconds</string>
-         </property>
-         <property name="maximum">
-          <number>5000</number>
-         </property>
-         <property name="singleStep">
-          <number>100</number>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="moved">
-      <attribute name="title">
-       <string>Moved</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_5">
-       <item>
-        <widget class="QLabel" name="label_7">
-         <property name="toolTip">
-          <string>This delay is intended for those who use an
-animation plugin. For more information, visit
-this link: https://codeberg.org/Serroda/fluid-tile/wiki/Animations.
-If you have not installed the animation plugin,
-leave it at the default setting of 0 to avoid errors</string>
-         </property>
-         <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Delay to extend windows after the windows moved between screens&lt;br&gt; ⚠️ &lt;span style=&quot; font-weight:700; color:#aa0000;&quot;&gt;WARNING&lt;/span&gt;: Do not change the default value before reading the wiki &lt;a href=&quot;https://codeberg.org/Serroda/fluid-tile/wiki/Animations&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#ff5500;&quot;&gt;link&lt;/span&gt;&lt;/a&gt; about animations&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="kcfg_WindowsExtendTileChangedDelay">
-         <property name="toolTip">
-          <string>This delay is intended for those who use an
-animation plugin. For more information, visit
-this link: https://codeberg.org/Serroda/fluid-tile/wiki/Animations.
-If you have not installed the animation plugin,
-leave it at the default setting of 0 to avoid errors</string>
-         </property>
-         <property name="suffix">
-          <string> milliseconds</string>
-         </property>
-         <property name="maximum">
-          <number>5000</number>
-         </property>
-         <property name="singleStep">
-          <number>100</number>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_10">
-         <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700; &quot;&gt;Recommended for touch screens&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="kcfg_UIWindowCursor">
-         <property name="toolTip">
-          <string>This allows you to move the window from the UI via touch screens,
-improving support and in cases where the cursor is not present.
-The position it takes is the center of the top edge of the window</string>
-         </property>
-         <property name="text">
-          <string>Use the window position instead of the cursor position when the UI is visible</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="closed_moved">
-      <attribute name="title">
-       <string>Closed or Moved</string>
-      </attribute>
-      <layout class="QFormLayout" name="formLayout_2">
-       <property name="verticalSpacing">
-        <number>12</number>
-       </property>
-       <item row="0" column="0">
-        <widget class="QCheckBox" name="kcfg_DesktopRemove">
-         <property name="locale">
-          <locale language="English" country="Eswatini"/>
-         </property>
-         <property name="text">
-          <string>Delete virtual desktop if it is empty</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="all_cases">
-      <attribute name="title">
-       <string>All cases</string>
-      </attribute>
-      <layout class="QFormLayout" name="formLayout_4">
-       <property name="labelAlignment">
-        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
-       </property>
-       <property name="horizontalSpacing">
-        <number>6</number>
-       </property>
-       <property name="verticalSpacing">
-        <number>12</number>
-       </property>
-       <item row="0" column="0">
-        <widget class="QCheckBox" name="kcfg_MaximizeExtend">
-         <property name="text">
-          <string>Maximize the last window on the screen</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QCheckBox" name="kcfg_DesktopExtra">
-         <property name="toolTip">
-          <string/>
-         </property>
-         <property name="text">
-          <string>Add an empty desktop in the last position if the last desktop has windows</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
     </widget>
    </item>
+
+   <!-- 其他选项 -->
    <item>
     <widget class="QLabel" name="titleOther">
-     <property name="font">
-      <font>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="locale">
-      <locale language="English" country="Eswatini"/>
-     </property>
-     <property name="text">
-      <string>Other options</string>
-     </property>
+     <property name="font"><font><bold>true</bold></font></property>
+     <property name="text"><string>其他选项</string></property>
     </widget>
    </item>
    <item>
-    <widget class="QTabWidget" name="tabWidget">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>500</width>
-       <height>250</height>
-      </size>
-     </property>
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
-     <widget class="QWidget" name="blocklist">
-      <attribute name="title">
-       <string>⛔ Blocklist apps</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_4">
-       <property name="spacing">
-        <number>12</number>
-       </property>
-       <property name="topMargin">
-        <number>12</number>
-       </property>
+    <widget class="QTabWidget" name="tabOther">
+     <property name="currentIndex"><number>0</number></property>
+     <widget class="QWidget" name="tabBlocklist">
+      <attribute name="title"><string>黑名单</string></attribute>
+      <layout class="QVBoxLayout" name="vlayoutBlocklist">
        <item>
         <widget class="QLabel" name="labelBlocklist">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>How to quickly obtain the name:
-Right-click on the window header &gt; More actions &gt; Configure special preferences for the application
-You will find the “XDG Name” in the header of the window that opens, with text similar to this:
-Preferences for the application “XDG Name” </string>
-         </property>
-         <property name="locale">
-          <locale language="English" country="Eswatini"/>
-         </property>
-         <property name="text">
-          <string>Applications to which you do not want the script to apply (enter the XDG name of the application)</string>
-         </property>
-         <property name="scaledContents">
-          <bool>false</bool>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
+         <property name="text"><string>不希望脚本管理的应用程序 (输入 XDG 名称，逗号分隔)</string></property>
+         <property name="wordWrap"><bool>true</bool></property>
         </widget>
        </item>
        <item>
         <widget class="KEditListWidget" name="kcfg_AppsBlocklist">
-         <property name="toolTip">
-          <string>How to quickly obtain the name:
-Right-click on the window header &gt; More actions &gt; Configure special preferences for the application
-You will find the “XDG Name” in the header of the window that opens, with text similar to this:
-Preferences for the application “XDG Name” </string>
-         </property>
-         <property name="statusTip">
-          <string/>
-         </property>
-         <property name="locale">
-          <locale language="English" country="Eswatini"/>
-         </property>
          <property name="buttons">
           <set>KEditListWidget::Button::Add|KEditListWidget::Button::Remove</set>
          </property>
@@ -497,295 +141,50 @@ Preferences for the application “XDG Name” </string>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tileOrderPriority">
-      <attribute name="title">
-       <string>🔢 Tile order priority</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <property name="spacing">
-        <number>12</number>
-       </property>
-       <property name="topMargin">
-        <number>12</number>
-       </property>
+     <widget class="QWidget" name="tabPriority">
+      <attribute name="title"><string>磁贴优先级</string></attribute>
+      <layout class="QVBoxLayout" name="vlayoutPriority">
        <item>
-        <widget class="QLabel" name="labelTilePriority">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Example: If the first property is “Width” and the second is “Height,” the windows will be sorted with preference given to tiles with greater width. If there are tiles with the same width, the tile with greater height will be chosen.</string>
-         </property>
-         <property name="locale">
-          <locale language="English" country="Eswatini"/>
-         </property>
-         <property name="text">
-          <string>Sets the order of tile properties that will have higher priority when arranging desktop windows</string>
-         </property>
-         <property name="scaledContents">
-          <bool>false</bool>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="labelTilePriority2">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>Example: If the first property is “Width” and the second is “Height,” the windows will be sorted with preference given to tiles with greater width. If there are tiles with the same width, the tile with greater height will be chosen.</string>
-         </property>
-         <property name="locale">
-          <locale language="English" country="Eswatini"/>
-         </property>
-         <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700; color:#aa0000;&quot;&gt;⚠️ WARNING:&lt;/span&gt; Do not change the default values, just order the items&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="scaledContents">
-          <bool>false</bool>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
+        <widget class="QLabel" name="labelPriority">
+         <property name="text"><string>设置窗口分配磁贴时的排序优先级</string></property>
+         <property name="wordWrap"><bool>true</bool></property>
         </widget>
        </item>
        <item>
         <widget class="KEditListWidget" name="kcfg_TilesPriority">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="toolTip">
-          <string>Example: If the first property is “Width” and the second is “Height,” the windows will be sorted with preference given to tiles with greater width. If there are tiles with the same width, the tile with greater height will be chosen.</string>
-         </property>
          <property name="buttons">
           <set>KEditListWidget::Button::UpDown</set>
          </property>
-         <property name="checkAtEntering">
-          <bool>false</bool>
-         </property>
         </widget>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="defaultLayout">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <attribute name="title">
-       <string>🪟 Default layout</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_6">
-       <property name="spacing">
-        <number>12</number>
-       </property>
-       <property name="sizeConstraint">
-        <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
-       </property>
-       <property name="topMargin">
-        <number>12</number>
-       </property>
-       <item>
-        <widget class="QLabel" name="labelDefaultLayout">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="locale">
-          <locale language="English" country="Eswatini"/>
-         </property>
-         <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;left&quot;&gt;Set the KWin default layout when a new virtual desktop is created&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="scaledContents">
-          <bool>false</bool>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
+     <widget class="QWidget" name="tabUI">
+      <attribute name="title"><string>界面</string></attribute>
+      <layout class="QFormLayout" name="formUI">
+       <property name="verticalSpacing"><number>10</number></property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelUIMode">
+         <property name="text"><string>模式</string></property>
         </widget>
        </item>
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>&lt;html&gt;
-  &lt;head /&gt;
-  &lt;body style=&quot;text-align: center&quot;&gt;
-    &lt;pre&gt;
-+-------+   +-------+   +-------+   +-------+   +-------+   +-------+
-|       |   |   |   |   |   1   |   | 1 |   |   |   | 2 |   | 1 | 2 |
-|   1   |   | 1 | 2 |   |-------|   |---+ 3 |   | 1 +---|   |---+---|
-|       |   |   |   |   |   2   |   | 2 |   |   |   | 3 |   | 3 | 4 |
-+-------+   +-------+   +-------+   +-------+   +-------+   +-------+
-    1           2           3           4           5           6    
-    &lt;/pre&gt;
-  &lt;/body&gt;
-&lt;/html&gt;
-</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="kcfg_LayoutDefault">
-         <item>
-          <property name="text">
-           <string>1</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>2</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>3</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>4</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>5</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>6</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_8">
-         <property name="toolTip">
-          <string>If you add a value to this field, it will take priority over the default layouts above it
-Remove this value to return to the default layouts</string>
-         </property>
-         <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Custom layout&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_9">
-         <property name="toolTip">
-          <string>If you add a value to this field, it will take priority over the default layouts above it
-Remove this value to return to the default layouts</string>
-         </property>
-         <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;a href=&quot;https://codeberg.org/Serroda/fluid-tile/wiki/Custom-layout&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#ffbaba;&quot;&gt;How can I create a custom layout?&lt;/span&gt;&lt;/a&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPlainTextEdit" name="kcfg_LayoutCustom">
-         <property name="toolTip">
-          <string>If you add a value to this field, it will take priority over the default layouts above it
-Remove this value to return to the default layouts</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="ui">
-      <attribute name="title">
-       <string>🖌️ User interface</string>
-      </attribute>
-      <layout class="QFormLayout" name="formLayout">
-       <property name="fieldGrowthPolicy">
-        <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
-       </property>
-       <property name="labelAlignment">
-        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
-       </property>
-       <property name="verticalSpacing">
-        <number>6</number>
-       </property>
-       <property name="topMargin">
-        <number>6</number>
-       </property>
        <item row="0" column="1">
         <widget class="QComboBox" name="kcfg_UIMode">
-         <item>
-          <property name="text">
-           <string>Fullscreen</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Compact</string>
-          </property>
-         </item>
+         <item><property name="text"><string>全屏</string></property></item>
+         <item><property name="text"><string>紧凑</string></property></item>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Mode</string>
-         </property>
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelUIPosition">
+         <property name="text"><string>紧凑模式位置</string></property>
         </widget>
        </item>
        <item row="1" column="1">
         <widget class="QComboBox" name="kcfg_UIWindowCompactPosition">
-         <item>
-          <property name="text">
-           <string>Center of the screen</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Top of the screen</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Bottom of the screen</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Cursor position</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Compact mode position</string>
-         </property>
+         <item><property name="text"><string>屏幕中央</string></property></item>
+         <item><property name="text"><string>屏幕顶部</string></property></item>
+         <item><property name="text"><string>屏幕底部</string></property></item>
+         <item><property name="text"><string>光标位置</string></property></item>
         </widget>
        </item>
       </layout>

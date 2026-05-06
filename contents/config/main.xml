@@ -2,46 +2,27 @@
 <kcfg xmlns="http://www.kde.org/standards/kcfg/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0 http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
     <kcfgfile name=""/>
     <group name="">
+        <entry name="SplitDirection" type="Enum">
+            <choices>
+                <choice name="1"><label>水平</label></choice>
+                <choice name="2"><label>垂直</label></choice>
+            </choices>
+            <default>1</default>
+        </entry>
+        <entry name="ResizeStep" type="Int">
+            <default>50</default>
+        </entry>
+        <entry name="FloatingOpacity" type="Int">
+            <default>82</default>
+        </entry>
         <entry name="MaximizeExtend" type="Bool">
             <default>true</default>
         </entry>
-        <entry name="WindowsOrderOpen" type="Bool">
-            <default>false</default>
-        </entry>
-        <entry name="WindowsOrderClose" type="Bool">
-            <default>false</default>
+        <entry name="ModalsIgnore" type="Bool">
+            <default>true</default>
         </entry>
         <entry name="WindowsExtendTileChangedDelay" type="Int">
             <default>350</default>
-        </entry>
-        <entry name="WindowOverflowAction" type="Enum">
-            <choices>
-                <choice name="0"><label>创建新虚拟桌面：在当前桌面之后</label></choice>
-                <choice name="1"><label>创建新虚拟桌面：在当前桌面之前</label></choice>
-                <choice name="2"><label>创建新虚拟桌面：在末尾</label></choice>
-                <choice name="3"><label>创建新虚拟桌面：在开头</label></choice>
-                <choice name="4"><label>切换到下一个平铺布局</label></choice>
-                <choice name="5"><label>允许浮动</label></choice>
-            </choices>
-            <default>0</default>
-        </entry>
-        <entry name="WindowOverflowPerScreen" type="Bool">
-            <default>false</default>
-        </entry>
-        <entry name="DesktopRemove" type="Bool">
-            <default>false</default>
-        </entry>
-        <entry name="DesktopRemoveMin" type="Int">
-            <default>1</default>
-        </entry>
-        <entry name="DesktopRemoveDelay" type="Int">
-            <default>300</default>
-        </entry>
-        <entry name="DesktopExtra" type="Bool">
-            <default>false</default>
-        </entry>
-        <entry name="ModalsIgnore" type="Bool">
-            <default>true</default>
         </entry>
         <entry name="UIWindowCursor" type="Bool">
             <default>false</default>
@@ -64,29 +45,6 @@
         </entry>
         <entry name="TilesPriority" type="StringList">
             <default>宽度,高度,顶部,左侧,右侧,底部</default>
-        </entry>
-        <entry name="LayoutDefault" type="Enum">
-            <choices>
-                <choice name="1"><label>1</label></choice>
-                <choice name="2"><label>2</label></choice>
-                <choice name="3"><label>3</label></choice>
-                <choice name="4"><label>4</label></choice>
-                <choice name="5"><label>5</label></choice>
-                <choice name="6"><label>6</label></choice>
-            </choices>
-            <default>1</default>
-        </entry>
-        <entry name="LayoutCustom" type="String">
-        </entry>
-        <entry name="SplitDirection" type="Enum">
-            <choices>
-                <choice name="1"><label>水平</label></choice>
-                <choice name="2"><label>垂直</label></choice>
-            </choices>
-            <default>1</default>
-        </entry>
-        <entry name="ResizeStep" type="Int">
-            <default>50</default>
         </entry>
         <entry name="AppsBlocklist" type="StringList">
             <default>moonlight,org.kde.xwaylandvideobridge,wl-paste,wl-copy,org.kde.kded6,qt-sudo,org.kde.polkit-kde-authentication-agent-1,org.kde.spectacle,kcm_kwinrules,org.freedesktop.impl.portal.desktop.kde,krunner,plasmashell,org.kde.plasmashell,kwin_wayland,ksmserver-logout-greeter</default>

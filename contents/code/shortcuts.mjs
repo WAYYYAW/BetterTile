@@ -10,7 +10,7 @@ export class Shortcuts {
           const win = workspace.activeWindow;
           const added = blocklist.toggleWindow(win);
           if (added) {
-            win.opacity = 0.82;
+            win.opacity = config.floatingOpacity || 0.82;
             windows.extendCurrentDesktop();
           } else {
             win.opacity = 1.0;
