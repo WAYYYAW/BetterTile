@@ -51,79 +51,43 @@ export class Engine {
     );
   }
 
-  //Trigger when a window is added to the desktop
+  // Dynamic split-tree: place window on current desktop, split if needed
   onWindowAdded(window) {
     if (this.classes.blocklist.check(window) === true) {
       return;
     }
 
-    const space = this.classes.desktops.checkEmptySpace(window);
-
-    if (space === null) {
-      // windowOverflowAction - Create a new virtual desktop: *all versions
-      if ([0, 1, 2, 3].includes(this.config.windowOverflowAction) === true) {
-        this.classes.desktops.avoidDesktopChanged = true;
-        const desktop = this.classes.desktops.create(true);
-        this.classes.windows.setTilesOnAdd(
-          window,
-          desktop,
-          this.workspace.activeScreen,
-        );
-      }
-    } else {
-      // windowOverflowAction - Switch to next tile layout
-      if (
-        this.config.windowOverflowAction === 4 &&
-        space.nextLayout !== undefined
-      ) {
-        this.changeLayoutOverflow(
-          window,
-          space.desktop,
-          space.nextLayout,
-          space.screen,
-        );
-      } else {
-        this.classes.windows.setTilesOnAdd(window, space.desktop, space.screen);
-      }
-    }
-
-    this.classes.desktops.checkDesktopExtra();
-  }
-
-  changeLayoutOverflow(window, desktop, nextLayout, screen) {
     this.state.avoidChildChanged = true;
-    this.classes.tiles.setLayout(desktop, nextLayout, false, screen);
+    this.classes.windows.setTilesOnAdd(
+      window,
+      this.workspace.currentDesktop,
+      this.workspace.activeScreen,
+    );
     this.setTilesSignals();
-    this.classes.windows.setTilesOnAdd(window, desktop, screen);
-    this.classes.timer.start("changeLayoutOverflow", () => {
+    this.classes.windows.extendCurrentDesktop(false);
+    this.classes.timer.start("onWindowAdded", () => {
       this.state.avoidChildChanged = false;
     });
   }
 
-  //Trigger when a window is remove to the desktop
+  // Dynamic split-tree: remove tile, KWin expands sibling
   onWindowRemoved(window) {
     if (this.classes.blocklist.check(window) === true) {
       return;
     }
 
-    const continueProcess = this.classes.windows.setTilesOnRemove(window);
-
     this.classes.blocklist.removeWindow(window);
+    var noWindows = this.classes.windows.setTilesOnRemove(window);
 
-    if (continueProcess === false) {
+    if (!noWindows) {
       this.classes.windows.focus();
-    } else {
-      this.classes.desktops.remove({
-        desktopsId: window.desktops.map((d) => d.id),
-        windowIgnore: window,
-      });
     }
   }
 
   //Set signals to all Windows
   setWindowsSignals() {
-    for (const windowItem of this.workspace.stackingOrder) {
-      this.setSignalsToWindow(windowItem);
+    for (var i = 0; i < this.workspace.stackingOrder.length; i++) {
+      this.setSignalsToWindow(this.workspace.stackingOrder[i]);
     }
   }
 
@@ -134,7 +98,7 @@ export class Engine {
     }
 
     if (window._signals !== undefined) {
-      for (const key in window._signals) {
+      for (var key in window._signals) {
         window[key].disconnect(window._signals[key]);
       }
     }
@@ -144,28 +108,23 @@ export class Engine {
       maximizedChanged: this.onMaximizeChanged.bind(this, window),
       minimizedChanged: this.onMinimizedChanged.bind(this, window),
       interactiveMoveResizeStarted: this.classes.ui.onUserMoveStart.bind(
-        this.classes.ui,
-        window,
+        this.classes.ui, window,
       ),
       interactiveMoveResizeStepped: this.classes.ui.onUserMoveStepped.bind(
-        this.classes.ui,
-        window,
+        this.classes.ui, window,
       ),
       interactiveMoveResizeFinished: this.classes.ui.onUserMoveFinished.bind(
-        this.classes.ui,
-        window,
+        this.classes.ui, window,
       ),
     };
 
-    for (const key in window._signals) {
+    for (var key in window._signals) {
       window[key].connect(window._signals[key]);
     }
   }
 
-  //When a window tile is changed, exchange windows and extend windows
+  //When a window tile is changed, exchange windows and extend
   onWindowAddedToTile(tile, window) {
-    //Trigger when a window is maximized but not minimized
-    //when a window exchange
     if (
       this.classes.blocklist.check(window) === true ||
       this.classes.ui.checkIfUIVisible() === true ||
@@ -173,19 +132,16 @@ export class Engine {
       window._tileShadow === undefined
     ) {
       window._avoidTileChangedTrigger =
-        window._avoidTileChangedTrigger === true
-          ? false
-          : window._avoidTileChangedTrigger;
+        window._avoidTileChangedTrigger === true ? false : window._avoidTileChangedTrigger;
       window._tileShadow = tile;
       return;
     }
 
-    const windowsOther = this.classes.windows
+    var windowsOther = this.classes.windows
       .getAll(window)
-      .filter(
-        (w) =>
-          w.minimized === false && (w.tile === tile || w._tileShadow === tile),
-      );
+      .filter(function (w) {
+        return w.minimized === false && (w.tile === tile || w._tileShadow === tile);
+      });
 
     if (windowsOther.length > 0) {
       this.classes.tiles.exchangeTiles(windowsOther, window._tileShadow);
@@ -195,31 +151,19 @@ export class Engine {
       this.classes.desktops.desktopsExtend.add(window._tileShadow._desktop);
     }
 
-    //Start delay only when you have to exchange in another screen
     if (window._tileShadow._screen !== this.workspace.activeScreen) {
-      //Extend windows when timer finish
       this.classes.timer.start(
         "extendCurrentDesktop",
-        this.classes.windows.extendCurrentDesktop.bind(
-          this.classes.windows,
-          true,
-        ),
+        this.classes.windows.extendCurrentDesktop.bind(this.classes.windows, true),
         this.config.windowsExtendTileChangedDelay,
       );
     } else if (
-      this.classes.tiles.getTilesCurrentDesktop().length >=
-        windowsOther.length + 1 ||
+      this.classes.tiles.getTilesCurrentDesktop().length >= windowsOther.length + 1 ||
       window._maximized === false
     ) {
-      //Start timer without delay, if you dont execute `extendWindows` inside
-      //QTimer, `extendWindows` doesnt get the correct position of the windows
-
       this.classes.timer.start(
         "extendCurrentDesktop",
-        this.classes.windows.extendCurrentDesktop.bind(
-          this.classes.windows,
-          true,
-        ),
+        this.classes.windows.extendCurrentDesktop.bind(this.classes.windows, true),
       );
     }
 
@@ -228,7 +172,6 @@ export class Engine {
 
   //When window is not maximized, set a previous tile
   onMaximizeChanged(window) {
-    //When a window is maximized window.tile is always null
     if (
       this.classes.blocklist.check(window) === true ||
       this.classes.ui.checkIfUIVisible() === true ||
@@ -238,13 +181,10 @@ export class Engine {
       window.tile !== null
     ) {
       window._avoidMaximizeTrigger =
-        window._avoidMaximizeTrigger === true
-          ? false
-          : window._avoidMaximizeTrigger;
+        window._avoidMaximizeTrigger === true ? false : window._avoidMaximizeTrigger;
       return;
     }
 
-    //If not fullscreen
     if (window.tile !== window._tileShadow) {
       window._avoidTileChangedTrigger = false;
       window._avoidMaximizeExtend = true;
@@ -277,9 +217,6 @@ export class Engine {
   onCurrentDesktopChanged() {
     this.classes.ui.resetLayout();
     this.setTilesSignals();
-    if (this.classes.ui.checkIfUIVisible() === false) {
-      this.classes.desktops.checkDesktopExtra();
-    }
     this.classes.timer.start(
       "currentDesktopChanged",
       this.classes.desktops.onTimerCurrentDesktopChangedFinished.bind(
@@ -296,21 +233,21 @@ export class Engine {
 
   //Set signal to tiles
   setTilesSignals(screenAll = true) {
-    let screens = this.workspace.screens;
+    var screens = this.workspace.screens;
 
     if (screenAll === false) {
       screens = [this.workspace.activeScreen];
     }
 
-    for (const screen of screens) {
-      const rootTile = this.classes.tiles.getRootTile(undefined, screen);
+    for (var si = 0; si < screens.length; si++) {
+      var rootTile = this.classes.tiles.getRootTile(undefined, screens[si]);
 
       if (rootTile === null) {
-        return;
+        continue;
       }
 
       if (rootTile._signals !== undefined) {
-        for (const key in rootTile._signals) {
+        for (var key in rootTile._signals) {
           rootTile[key].disconnect(rootTile._signals[key]);
         }
       }
@@ -320,16 +257,17 @@ export class Engine {
         windowAdded: this.onWindowAddedToTile.bind(this, rootTile),
       };
 
-      for (const key in rootTile._signals) {
+      for (var key in rootTile._signals) {
         rootTile[key].connect(rootTile._signals[key]);
       }
     }
 
-    const tiles = this.classes.tiles.getTilesCurrentDesktop(true, screenAll);
+    var tiles = this.classes.tiles.getTilesCurrentDesktop(true, screenAll);
 
-    for (const tile of tiles) {
+    for (var ti = 0; ti < tiles.length; ti++) {
+      var tile = tiles[ti];
       if (tile._signals !== undefined) {
-        for (const key in tile._signals) {
+        for (var key in tile._signals) {
           tile[key].disconnect(tile._signals[key]);
         }
       }
@@ -339,8 +277,9 @@ export class Engine {
         windowAdded: this.onWindowAddedToTile.bind(this, tile),
       };
 
-      for (const key in tile._signals) {
-        if (key === "windowAdded" && tile._parent === true) {
+      for (var key in tile._signals) {
+        // Skip windowAdded on container tiles (they have children)
+        if (key === "windowAdded" && tile.tiles && tile.tiles.length > 0) {
           continue;
         }
         tile[key].connect(tile._signals[key]);
@@ -348,27 +287,18 @@ export class Engine {
     }
   }
 
-  //Extend windows when timer finish
-  onTimerResetAllFinished(screenAll) {
-    this.classes.windows.resetAll(screenAll);
-    this.setTilesSignals(screenAll);
-    this.classes.windows.reconnectSignals(screenAll);
-    this.state.avoidChildChanged = false;
-  }
-
-  //When a tile is added or removed in KWin tile manager by hand
-  //reset windows
+  //When a tile is added or removed manually (KWin tile editor)
   onChildTilesChanged() {
     if (this.state.avoidChildChanged === true) {
       return;
     }
+    // In dynamic mode, just reconnect signals without full reset
     this.state.avoidChildChanged = true;
-    this.classes.windows.disconnectSignals(false);
-    this.classes.tiles.disconnectSignals(false);
-    this.classes.timer.start(
-      "resetAll",
-      this.onTimerResetAllFinished.bind(this, false),
-    );
+    this.classes.timer.start("childTilesChanged", () => {
+      this.setTilesSignals(false);
+      this.classes.windows.extendCurrentDesktop(false);
+      this.state.avoidChildChanged = false;
+    });
   }
 
   onStart() {

@@ -78,6 +78,13 @@
         </entry>
         <entry name="LayoutCustom" type="String">
         </entry>
+        <entry name="SplitDirection" type="Enum">
+            <choices>
+                <choice name="1"><label>水平</label></choice>
+                <choice name="2"><label>垂直</label></choice>
+            </choices>
+            <default>1</default>
+        </entry>
         <entry name="ResizeStep" type="Int">
             <default>50</default>
         </entry>

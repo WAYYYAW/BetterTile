@@ -14,96 +14,128 @@ export class Windows {
     desktop = this.workspace.currentDesktop,
     screen = this.workspace.activeScreen,
   ) {
-    const windows = [];
+    var windows = [];
 
-    for (const windowItem of this.workspace.stackingOrder) {
+    for (var i = 0; i < this.workspace.stackingOrder.length; i++) {
+      var w = this.workspace.stackingOrder[i];
       if (
-        windowItem !== windowIgnore &&
-        windowItem.output === screen &&
-        windowItem.desktops.includes(desktop) === true &&
-        this.blocklist.check(windowItem) === false
+        w !== windowIgnore &&
+        w.output === screen &&
+        w.desktops.includes(desktop) === true &&
+        this.blocklist.check(w) === false
       ) {
-        windows.push(windowItem);
+        windows.push(w);
       }
     }
 
     return windows;
   }
 
-  // Set window tiles on add window
+  // Dynamic split-tree: place new window by splitting the focused tile
   setTilesOnAdd(windowMain, desktop, screen) {
     this.workspace.currentDesktop = desktop;
     windowMain.desktops = [desktop];
-    const tilesOrdered = this.tiles.getOrderedTiles(desktop, screen);
 
-    if (this.config.windowsOrderOpen === true) {
-      this.setTile(windowMain, tilesOrdered[0], {
-        checkDifferentScreen: false,
-        rearrangeOthers: true,
-        setShadow: true,
-        tilesOrderedCached: tilesOrdered,
-      });
-    } else {
-      const windowsOther = this.getAll(windowMain);
-      const tileEmpty = tilesOrdered.find(
-        (t) => !windowsOther.some((w) => w.tile === t || w._tileShadow === t),
-      );
+    var windowsExisting = this.getAll(windowMain, desktop, screen);
 
-      if (tileEmpty !== undefined) {
-        this.setTile(windowMain, tileEmpty, {
-          checkDifferentScreen: false,
-          setShadow: true,
-          tilesOrderedCached: tilesOrdered,
-          windowsOtherCached: windowsOther,
-        });
+    // First window: manage by root tile, 75% centering via extend
+    if (windowsExisting.length === 0) {
+      var rootTile = this.tiles.getRootTile(desktop, screen);
+      if (rootTile) {
+        windowMain._avoidMaximizeTrigger = true;
+        windowMain._tileShadow = rootTile;
+        rootTile.manage(windowMain);
+      }
+      return;
+    }
+
+    // Try to find an empty leaf tile first
+    var leaves = this.tiles.getLeafTiles(desktop, screen);
+    var emptyTile = null;
+    for (var i = 0; i < leaves.length; i++) {
+      var occupied = false;
+      for (var j = 0; j < windowsExisting.length; j++) {
+        if (windowsExisting[j].tile === leaves[i] || windowsExisting[j]._tileShadow === leaves[i]) {
+          occupied = true;
+          break;
+        }
+      }
+      if (!occupied) {
+        emptyTile = leaves[i];
+        break;
       }
     }
-  }
 
-  // Set window tiles on remove window
-  setTilesOnRemove(windowMain) {
-    const windowsOther = this.getAll(windowMain, undefined, windowMain.output);
-    const tilesOrdered = this.tiles
-      .getTilesCurrentDesktop()
-      .filter((t) => t._screen === windowMain.output);
-
-    if (tilesOrdered.length === 0 || windowsOther.length === 0) {
-      return true;
+    if (emptyTile) {
+      windowMain._avoidMaximizeTrigger = true;
+      windowMain._tileShadow = emptyTile;
+      emptyTile.manage(windowMain);
+      return;
     }
 
-    for (let x = 0; x < windowsOther.length; x++) {
-      windowsOther[x]._avoidMaximizeExtend = false;
-
-      if (this.config.windowsOrderClose === true) {
-        windowsOther[x]._avoidMaximizeTrigger = true;
-        windowsOther[x].setMaximize(false, false);
-        if (tilesOrdered[x] !== undefined) {
-          windowsOther[x]._avoidTileChangedTrigger = true;
-          tilesOrdered[x].manage(windowsOther[x]);
-          windowsOther[x]._tileShadow = tilesOrdered[x];
+    // No empty tile: split the focused window's leaf tile
+    var focusedTile = this.tiles.getFocusedLeafTile();
+    if (!focusedTile) {
+      // Fallback: use any existing window's tile
+      for (var k = 0; k < windowsExisting.length; k++) {
+        var ft = windowsExisting[k].tile || windowsExisting[k]._tileShadow;
+        if (ft && (!ft.tiles || ft.tiles.length === 0)) {
+          focusedTile = ft;
+          break;
         }
       }
     }
 
-    this.extend(windowsOther, this.userspace.getPanelsSize());
+    if (!focusedTile) return;
+
+    var direction = this.tiles.getSplitDirection();
+    var children = this.tiles.splitTileForWindow(focusedTile, direction);
+    if (!children) return;
+
+    // child[0] already has the existing window managed
+    // child[1] gets the new window
+    windowMain._avoidMaximizeTrigger = true;
+    windowMain._tileShadow = children[1];
+    children[1].manage(windowMain);
+  }
+
+  // Dynamic split-tree: remove window's tile, KWin expands sibling
+  setTilesOnRemove(windowMain) {
+    var tile = windowMain.tile || windowMain._tileShadow;
+    if (tile) {
+      // Avoid signal cascades
+      if (tile.parent) {
+        tile.parent._avoidChildTilesChanged = true;
+      }
+      tile.remove();
+    }
+
+    var windowsOther = this.getAll(windowMain, undefined, windowMain.output);
+
+    if (windowsOther.length === 0) {
+      return true; // No windows left
+    }
+
+    this.extend(windowsOther, this.userspace.getPanelsSize(undefined, windowMain.output));
     return false;
   }
 
-  //Extend window if empty space is available
+  // Extend windows to fill tile bounds
   extend(windows, panelsSize, skipSingleMargin = false) {
+    // Single window: 75% centered on desktop
     if (
       skipSingleMargin !== true &&
       windows.length === 1 &&
       windows[0].minimized === false
     ) {
-      const win = windows[0];
+      var win = windows[0];
       win._avoidMaximizeTrigger = true;
       win.setMaximize(false, false);
-      const wa = panelsSize.workarea;
-      const sw = wa.right - wa.left;
-      const sh = wa.bottom - wa.top;
-      const mx = Math.round(sw * 0.125);
-      const my = Math.round(sh * 0.125);
+      var wa = panelsSize.workarea;
+      var sw = wa.right - wa.left;
+      var sh = wa.bottom - wa.top;
+      var mx = Math.round(sw * 0.125);
+      var my = Math.round(sh * 0.125);
       win.frameGeometry = Qt.rect(
         wa.left + mx, wa.top + my,
         sw - mx * 2, sh - my * 2,
@@ -111,6 +143,7 @@ export class Windows {
       return;
     }
 
+    // Single window + maximizeExtend fallback
     if (
       this.config.maximizeExtend === true &&
       windows.length === 1 &&
@@ -123,133 +156,26 @@ export class Windows {
       return;
     }
 
-    this.resetGeometry(windows, panelsSize);
+    // Multi-window: sync frameGeometry to tile bounds with padding
+    for (var i = 0; i < windows.length; i++) {
+      var w = windows[i];
+      w._avoidMaximizeExtend = false;
 
-    for (const window of windows) {
-      window._avoidMaximizeExtend = false;
+      if (w.minimized === true) continue;
 
-      if (
-        window.tile === null ||
-        window._tileShadow === undefined ||
-        window.minimized === true
-      ) {
-        continue;
-      }
+      var tileRef = w.tile !== null ? w.tile : w._tileShadow;
+      if (!tileRef) continue;
 
-      const windowGeometry = this.getRealGeometry(window);
-      const windowsOther = windows
-        .filter(
-          (wo) =>
-            wo !== window &&
-            (wo.tile !== null || wo._tileShadow !== undefined) &&
-            wo.minimized === false,
-        )
-        .map((wo) => this.getRealGeometry(wo));
+      w.setMaximize(false, false);
 
-      const newGeometry = {
-        top: panelsSize.workarea.top,
-        left: panelsSize.workarea.left,
-        right: panelsSize.workarea.right,
-        bottom: panelsSize.workarea.bottom,
-      };
-
-      //Only check windows on the vertical axis that
-      //belong to the same column. This prevents windows
-      //from being placed on top of each other, while
-      //on the horizontal axis we search all rows
-      //for windows that may cause conflicts,
-      //this being more restrictive when establishing the window size.
-
-      const windowsConflict = {
-        left: [],
-        top: [],
-        right: [],
-        bottom: [],
-      };
-
-      for (const windowItem of windowsOther) {
-        if (windowItem.right <= windowGeometry.left) {
-          windowsConflict.left.push(windowItem);
-        }
-
-        if (windowItem.left >= windowGeometry.right) {
-          windowsConflict.right.push(windowItem);
-        }
-
-        const sameColumn = this.checkSameColumn(windowGeometry, windowItem);
-
-        if (sameColumn === false) {
-          continue;
-        }
-
-        if (windowItem.bottom <= windowGeometry.top) {
-          windowsConflict.top.push(windowItem);
-        }
-
-        if (windowItem.top >= windowGeometry.bottom) {
-          windowsConflict.bottom.push(windowItem);
-        }
-      }
-
-      for (const key in windowsConflict) {
-        const item = windowsConflict[key];
-
-        if (item.length === 0) {
-          continue;
-        }
-
-        const near = item.reduce(
-          (acc, woNew) => {
-            const distance = Math.hypot(
-              windowGeometry.left +
-              windowGeometry.width / 2 -
-              (woNew.left + woNew.width / 2),
-              windowGeometry.top +
-              windowGeometry.height / 2 -
-              (woNew.top + woNew.height / 2),
-            );
-
-            return acc.distance === -1 || distance < acc.distance
-              ? { distance, geometry: woNew }
-              : acc;
-          },
-          { distance: -1, geometry: newGeometry },
-        );
-
-        switch (key) {
-          case "left":
-            newGeometry.left = near.geometry.right;
-            break;
-          case "right":
-            newGeometry.right = near.geometry.left;
-            break;
-          case "top":
-            newGeometry.top = near.geometry.bottom;
-            break;
-          case "bottom":
-            newGeometry.bottom = near.geometry.top;
-            break;
-        }
-      }
-      const tileVirtual = this.setGeometry(window, newGeometry, panelsSize);
-      window._tileVirtual = tileVirtual;
-    }
-  }
-
-  //Set default tile size
-  resetGeometry(windows, panelsSize) {
-    for (const window of windows) {
-      window._tileVirtual = undefined;
-
-      if (
-        window.minimized === true ||
-        (window.tile === null && window._tileShadow === undefined)
-      ) {
-        continue;
-      }
-
-      window.setMaximize(false, false);
-      this.setGeometry(window, {}, panelsSize);
+      var geo = tileRef.absoluteGeometry;
+      var tilePad = tileRef.padding || 0;
+      w.frameGeometry = Qt.rect(
+        geo.x + tilePad,
+        geo.y + tilePad,
+        geo.width - tilePad * 2,
+        geo.height - tilePad * 2,
+      );
     }
   }
 
@@ -259,7 +185,7 @@ export class Windows {
       return window._tileVirtual;
     }
 
-    let tileResult = window._tileShadow?.absoluteGeometry;
+    var tileResult = window._tileShadow ? window._tileShadow.absoluteGeometry : undefined;
 
     if (window.tile !== null) {
       tileResult = window.tile.absoluteGeometry;
@@ -279,26 +205,23 @@ export class Windows {
     };
   }
 
-  //Set window size and return `virtualTile`
+  //Set window size and return virtual tile
   setGeometry(window, geometry, panelsSize) {
-    const tileRef = window.tile !== null ? window.tile : window._tileShadow;
-    const tileRefGeometry = this.getRealGeometry(window);
+    var tileRef = window.tile !== null ? window.tile : window._tileShadow;
+    var tileRefGeometry = this.getRealGeometry(window);
 
-    const left =
-      geometry.left !== undefined ? geometry.left : tileRefGeometry.left;
-    const top = geometry.top !== undefined ? geometry.top : tileRefGeometry.top;
+    var left = geometry.left !== undefined ? geometry.left : tileRefGeometry.left;
+    var top = geometry.top !== undefined ? geometry.top : tileRefGeometry.top;
 
-    const width =
-      geometry.right !== undefined
-        ? geometry.right - left
-        : tileRefGeometry.width;
-    const height =
-      geometry.bottom !== undefined
-        ? geometry.bottom - top
-        : tileRefGeometry.height;
+    var width = geometry.right !== undefined
+      ? geometry.right - left
+      : tileRefGeometry.width;
+    var height = geometry.bottom !== undefined
+      ? geometry.bottom - top
+      : tileRefGeometry.height;
 
-    let offsetX = tileRef.padding;
-    let offsetY = tileRef.padding;
+    var offsetX = tileRef.padding;
+    var offsetY = tileRef.padding;
 
     if (left === panelsSize.left) {
       offsetX += tileRef.padding;
@@ -324,10 +247,7 @@ export class Windows {
     };
 
     return {
-      width,
-      height,
-      left,
-      top,
+      width, height, left, top,
       right: left + width,
       bottom: top + height,
     };
@@ -336,7 +256,7 @@ export class Windows {
   //Focus window in the workspace
   focus(window) {
     if (window === undefined || window === null) {
-      const windows = this.getAll();
+      var windows = this.getAll();
 
       if (windows.length === 0) {
         return null;
@@ -352,7 +272,6 @@ export class Windows {
     }
   }
 
-  //Check if the tile is in the same column
   checkSameColumn(windowGeometry, windowGeometryOther) {
     return (
       (windowGeometry.left >= windowGeometryOther.left &&
@@ -364,25 +283,26 @@ export class Windows {
 
   //Extend all windows in the current desktop
   extendCurrentDesktop(screenAll = false, skipSingleMargin = false) {
-    let screens = [this.workspace.activeScreen];
+    var screens = [this.workspace.activeScreen];
 
     if (screenAll === true) {
       screens = this.workspace.screens;
     }
 
-    for (const screen of screens) {
-      const windows = this.getAll(undefined, undefined, screen);
+    for (var si = 0; si < screens.length; si++) {
+      var windows = this.getAll(undefined, undefined, screens[si]);
 
       if (windows.length === 0) {
         continue;
       }
 
-      this.extend(windows, this.userspace.getPanelsSize(undefined, screen), skipSingleMargin);
+      this.extend(windows, this.userspace.getPanelsSize(undefined, screens[si]), skipSingleMargin);
     }
   }
 
   //Check if the window has changed its desktop
-  checkDesktopChanged(window = this.workspace.activeWindow) {
+  checkDesktopChanged(window) {
+    if (window === undefined) window = this.workspace.activeWindow;
     if (window === null) {
       return false;
     }
@@ -390,70 +310,117 @@ export class Windows {
     return !(
       this.blocklist.check(window) === true ||
       window._tileShadow === undefined ||
-      window._tileShadow?._desktop === this.workspace.currentDesktop
+      (window._tileShadow && window._tileShadow._desktop === this.workspace.currentDesktop)
     );
   }
 
   //Search empty tile and set to the window
-  setEmptyTile(window = this.workspace.activeWindow) {
-    const windowsOther = this.getAll(window);
-    const tiles = this.tiles.getTilesCurrentDesktop();
+  setEmptyTile(window) {
+    if (window === undefined) window = this.workspace.activeWindow;
+    var windowsOther = this.getAll(window);
+    var leaves = this.tiles.getLeafTiles();
 
-    const tileEmpty = tiles.find(
-      (t) => !windowsOther.some((w) => w.tile === t || w._tileShadow === t),
-    );
+    var tileEmpty = null;
+    for (var i = 0; i < leaves.length; i++) {
+      var occupied = false;
+      for (var j = 0; j < windowsOther.length; j++) {
+        if (windowsOther[j].tile === leaves[i] || windowsOther[j]._tileShadow === leaves[i]) {
+          occupied = true;
+          break;
+        }
+      }
+      if (!occupied) {
+        tileEmpty = leaves[i];
+        break;
+      }
+    }
 
-    if (tileEmpty === undefined) {
-      window._avoidMaximizeTrigger = window._maximized;
+    if (!tileEmpty) {
+      // No empty tile: split the focused tile to make room
+      var focusedTile = this.tiles.getFocusedLeafTile();
+      if (focusedTile) {
+        var direction = this.tiles.getSplitDirection();
+        var children = this.tiles.splitTileForWindow(focusedTile, direction);
+        if (children) {
+          tileEmpty = children[1];
+        }
+      }
+    }
+
+    if (!tileEmpty) {
+      // Ultimate fallback: use any leaf tile
+      if (leaves.length > 0) {
+        tileEmpty = leaves[0];
+      }
+    }
+
+    if (tileEmpty) {
+      window.desktops = [tileEmpty._desktop];
+
+      if (window._maximized === true) {
+        window._avoidMaximizeTrigger = true;
+        window.setMaximize(false, false);
+      }
+
       window._avoidTileChangedTrigger = true;
-      this.setTile(window, tiles[0], {
-        checkDifferentScreen: false,
-        unmaximizeOthers: false,
-        windowsOtherCached: windowsOther,
-        tilesOrderedCached: tiles,
-      });
-      return false;
+      window._tileShadow = tileEmpty;
+      tileEmpty.manage(window);
+      return true;
     }
 
-    window.desktops = [tileEmpty._desktop];
-
-    if (window._maximized === true) {
-      window._avoidMaximizeTrigger = true;
-      window.setMaximize(false, false);
-    }
-
-    this.setTile(window, tileEmpty, {
-      windowsOtherCached: windowsOther,
-      setShadow: true,
-      tilesOrderedCached: tiles,
-    });
-
-    return true;
+    return false;
   }
 
-  //Reset all windows
+  // Reset: rebuild dynamic tree from existing windows
   resetAll(screenAll = false) {
-    let screens = [this.workspace.activeScreen];
+    var screens = [this.workspace.activeScreen];
 
     if (screenAll === true) {
       screens = this.workspace.screens;
     }
 
-    for (const screen of screens) {
-      const windows = this.getAll(undefined, undefined, screen);
-      const tilesOrdered = this.tiles.getOrderedTiles(undefined, screen);
+    for (var si = 0; si < screens.length; si++) {
+      var windows = this.getAll(undefined, undefined, screens[si]);
 
-      for (let i = 0; i < windows.length; i++) {
-        windows[i]._avoidMaximizeTrigger = true;
+      if (windows.length === 0) continue;
 
-        if (tilesOrdered[i] === undefined) {
-          windows[i]._tileShadow = tilesOrdered[tilesOrdered.length - 1];
-          tilesOrdered[tilesOrdered.length - 1].manage(windows[i]);
-          continue;
+      // Delete existing children from root
+      var rootTile = this.tiles.getRootTile(undefined, screens[si]);
+      if (!rootTile) continue;
+
+      rootTile._avoidChildTilesChanged = true;
+      var rootChildren = rootTile.tiles;
+      for (var ci = rootChildren.length - 1; ci >= 0; ci--) {
+        rootChildren[ci].remove();
+      }
+
+      if (windows.length === 1) {
+        // Single window: manage by root
+        windows[0]._avoidMaximizeTrigger = true;
+        windows[0]._tileShadow = rootTile;
+        rootTile.manage(windows[0]);
+      } else {
+        // Multiple windows: build chain of horizontal splits
+        // First window in root
+        windows[0]._avoidMaximizeTrigger = true;
+        windows[0]._tileShadow = rootTile;
+        rootTile.manage(windows[0]);
+
+        var currentTile = rootTile;
+        for (var wi = 1; wi < windows.length; wi++) {
+          var direction = this.tiles.getSplitDirection();
+          var children = this.tiles.splitTileForWindow(currentTile, direction);
+          if (!children) break;
+
+          // child[0] already has previous window
+          // child[1] gets next window
+          windows[wi]._avoidMaximizeTrigger = true;
+          windows[wi]._tileShadow = children[1];
+          children[1].manage(windows[wi]);
+
+          // Next split will be on the tile that just got the new window
+          currentTile = children[1];
         }
-
-        windows[i]._tileShadow = tilesOrdered[i];
-        tilesOrdered[i].manage(windows[i]);
       }
     }
 
@@ -462,32 +429,42 @@ export class Windows {
 
   //Disconnect all signals
   disconnectSignals(screenAll = true) {
-    let screens = this.workspace.screens;
+    var screens = this.workspace.screens;
 
     if (screenAll === false) {
       screens = [this.workspace.activeScreen];
     }
 
-    for (const screen of screens) {
-      const windows = this.getAll(undefined, undefined, screen);
-      for (const key in windows._signals) {
-        windows[key].disconnect(windows._signals[key]);
+    for (var si = 0; si < screens.length; si++) {
+      var windows = this.getAll(undefined, undefined, screens[si]);
+      for (var wi = 0; wi < windows.length; wi++) {
+        var w = windows[wi];
+        if (w._signals) {
+          for (var key in w._signals) {
+            w[key].disconnect(w._signals[key]);
+          }
+        }
       }
     }
   }
 
   //Connect all signals
   reconnectSignals(screenAll = true) {
-    let screens = this.workspace.screens;
+    var screens = this.workspace.screens;
 
     if (screenAll === false) {
       screens = [this.workspace.activeScreen];
     }
 
-    for (const screen of screens) {
-      const windows = this.getAll(undefined, undefined, screen);
-      for (const key in windows._signals) {
-        windows[key].connect(windows._signals[key]);
+    for (var si = 0; si < screens.length; si++) {
+      var windows = this.getAll(undefined, undefined, screens[si]);
+      for (var wi = 0; wi < windows.length; wi++) {
+        var w = windows[wi];
+        if (w._signals) {
+          for (var key in w._signals) {
+            w[key].connect(w._signals[key]);
+          }
+        }
       }
     }
   }
@@ -509,27 +486,28 @@ export class Windows {
       this.workspace.sendClientToScreen(window, tile._screen);
     }
 
-    const windowsOther =
+    var windowsOther =
       windowsOtherCached ?? this.getAll(window, tile._desktop, tile._screen);
 
     if (unmaximizeOthers === true) {
-      for (const windowOther of windowsOther) {
-        if (windowOther._maximized === true) {
-          windowOther._avoidMaximizeTrigger = true;
-          windowOther._avoidTileChangedTrigger = true;
-          windowOther.setMaximize(false, false);
-          windowOther._tileShadow.manage(windowOther);
+      for (var i = 0; i < windowsOther.length; i++) {
+        var wo = windowsOther[i];
+        if (wo._maximized === true) {
+          wo._avoidMaximizeTrigger = true;
+          wo._avoidTileChangedTrigger = true;
+          wo.setMaximize(false, false);
+          wo._tileShadow.manage(wo);
         }
       }
     }
 
     if (rearrangeOthers === true) {
-      const tilesOrdered = (
+      var tilesOrdered = (
         tilesOrderedCached ??
         this.tiles.getOrderedTiles(tile._desktop, tile._screen)
-      ).filter((t) => t !== tile);
+      ).filter(function (t) { return t !== tile; });
 
-      for (let x = 0; x < windowsOther.length; x++) {
+      for (var x = 0; x < windowsOther.length; x++) {
         windowsOther[x]._avoidMaximizeTrigger = true;
         windowsOther[x]._avoidTileChangedTrigger = true;
         windowsOther[x].setMaximize(false, false);

@@ -1,6 +1,5 @@
 export class Shortcuts {
   constructor(workspace, config, root, { blocklist, windows, tiles, ui, resize }) {
-    this.layoutIndex = config.layoutDefault - 1;
     root.shortcuts = [
       {
         name: "FluidtileToggleWindowBlocklist",
@@ -9,7 +8,6 @@ export class Shortcuts {
         callback: () => {
           ui.hide(3, true);
           const win = workspace.activeWindow;
-          const wasBlocked = blocklist.check(win);
           const added = blocklist.toggleWindow(win);
           if (added) {
             win.opacity = 0.82;
@@ -21,22 +19,19 @@ export class Shortcuts {
         },
       },
       {
-        name: "FluidtileChangeTileLayout",
-        text: "流体平铺 | 更改平铺布局",
-        sequence: "Meta+Alt+F",
+        name: "FluidtileSplitHorizontal",
+        text: "流体平铺 | 设置水平分割方向",
+        sequence: "Meta+H",
         callback: () => {
-          const layouts = tiles.getDefaultLayouts();
-
-          tiles.setLayout(
-            workspace.currentDesktop,
-            layouts[this.layoutIndex],
-            false,
-          );
-
-          this.layoutIndex =
-            this.layoutIndex >= layouts.length - 1 ? 0 : this.layoutIndex + 1;
-
-          ui.show(2);
+          tiles.setSplitDirection(1);
+        },
+      },
+      {
+        name: "FluidtileSplitVertical",
+        text: "流体平铺 | 设置垂直分割方向",
+        sequence: "Meta+V",
+        callback: () => {
+          tiles.setSplitDirection(2);
         },
       },
       {

@@ -2,158 +2,15 @@ export class Tiles {
   constructor(workspace, config) {
     this.workspace = workspace;
     this.config = config;
+    this.splitDirection = config.splitDirection || 1; // 1=Horizontal, 2=Vertical
   }
 
-  //Premade layouts
-  getDefaultLayouts(index) {
-    const layouts = [
-      [{ x: 0, y: 0 }],
-      [
-        { x: 0, y: 0 },
-        { x: 0.5, y: 0 },
-      ],
-      [
-        { x: 0, y: 0 },
-        { x: 0, y: 0.5 },
-      ],
-      [
-        {
-          x: 0,
-          y: 0,
-          tiles: [
-            { x: 0, y: 0 },
-            { x: 0, y: 0.5 },
-          ],
-        },
-        {
-          x: 0.5,
-          y: 0,
-        },
-      ],
-      [
-        { x: 0, y: 0 },
-        {
-          x: 0.5,
-          y: 0,
-          tiles: [
-            { x: 0, y: 0 },
-            { x: 0, y: 0.5 },
-          ],
-        },
-      ],
-      [
-        {
-          x: 0,
-          y: 0,
-          tiles: [
-            { x: 0, y: 0 },
-            { x: 0, y: 0.5 },
-          ],
-        },
-        {
-          x: 0.5,
-          y: 0,
-          tiles: [
-            { x: 0, y: 0 },
-            { x: 0, y: 0.5 },
-          ],
-        },
-      ],
-    ];
-
-    if (index === undefined) {
-      return layouts;
-    }
-
-    return layouts[index];
+  setSplitDirection(direction) {
+    this.splitDirection = direction;
   }
 
-  //Delete actual layout and set new layout
-  setLayout(desktop, layout, screenAll = true, screenOverride = undefined) {
-    let screens = this.workspace.screens;
-
-    if (screenAll === false) {
-      screens = [this.workspace.activeScreen];
-    }
-
-    if (screenOverride !== undefined) {
-      screens = [screenOverride];
-    }
-
-    for (const screen of screens) {
-      const tileRoot = this.workspace.rootTile(screen, desktop);
-      this.deleteTiles(tileRoot.tiles, tileRoot);
-      const result = this.setTiles(tileRoot.tiles[0] ?? tileRoot, layout);
-
-      if (result === false) {
-        console.log("Error on set tiles layout, splitMode === null");
-      }
-    }
-  }
-
-  //Set tile layout
-  setTiles(tileParent, layout) {
-    if (layout.length === 1) {
-      return true;
-    }
-
-    let splitMode = null;
-
-    if (layout.every((item) => item.x === 0)) {
-      splitMode = 2;
-    } else if (layout.every((item) => item.y === 0)) {
-      splitMode = 1;
-    } else if (layout.every((item) => item.x !== 0 && item.y !== 0)) {
-      splitMode = 0;
-    }
-
-    if (splitMode === null) {
-      return false;
-    }
-
-    //Create childs
-    if (tileParent.tiles.length === 0) {
-      tileParent.layoutDirection = splitMode;
-      tileParent.split(tileParent.layoutDirection);
-    }
-
-    for (let index = 0; index < layout.length; index++) {
-      if (splitMode === 0 && index > 0) {
-        layout[index].ref = tileParent.split(splitMode)[0];
-      } else {
-        layout[index].ref = tileParent.tiles[index];
-      }
-
-      this.setGeometryTile(layout[index]);
-    }
-
-    for (let x = 0; x < layout.length; x++) {
-      if (layout[x].tiles !== undefined) {
-        this.setTiles(layout[x].ref, layout[x].tiles);
-      }
-    }
-
-    return true;
-  }
-
-  // Set tile size and position
-  setGeometryTile(item) {
-    if (item.width !== undefined) {
-      const delta =
-        item.width * item.ref.parent.absoluteGeometry.width -
-        item.ref.absoluteGeometry.width;
-      item.ref.resizeByPixels(delta, Qt.RightEdge);
-    }
-
-    if (item.height !== undefined) {
-      const delta =
-        item.height * item.ref.parent.absoluteGeometry.height -
-        item.ref.absoluteGeometry.height;
-      item.ref.resizeByPixels(delta, Qt.BottomEdge);
-    }
-
-    item.ref.relativeGeometry.x = item.x;
-    item.ref.relativeGeometry.y = item.y;
+  getSplitDirection() {
+    return this.splitDirection;
   }
 
   //Get root tile
@@ -164,26 +21,104 @@ export class Tiles {
     return this.workspace.rootTile(screen, desktop);
   }
 
-  //Get tiles from the screen and virtual desktop
+  // Split a leaf tile, return [existingWindowTile, newWindowTile]
+  splitTileForWindow(tile, direction) {
+    if (tile.tiles && tile.tiles.length > 0) {
+      return null; // Not a leaf tile
+    }
+
+    var hasManagedWindow = false;
+    var managedWin = null;
+    var st = this.workspace.stackingOrder;
+    for (var i = 0; i < st.length; i++) {
+      if (st[i].tile === tile || st[i]._tileShadow === tile) {
+        hasManagedWindow = true;
+        managedWin = st[i];
+        break;
+      }
+    }
+
+    if (!hasManagedWindow || !managedWin) {
+      return null; // No window to split for
+    }
+
+    // Split the tile
+    tile.layoutDirection = direction;
+    var children = tile.split(direction);
+    if (!children || children.length < 2) {
+      return null;
+    }
+
+    var child0 = children[0];
+    var child1 = children[1];
+
+    // Manage existing window into child0
+    managedWin._avoidMaximizeTrigger = true;
+    managedWin._avoidTileChangedTrigger = true;
+    managedWin.setMaximize(false, false);
+    managedWin._tileShadow = child0;
+    child0.manage(managedWin);
+
+    return [child0, child1];
+  }
+
+  // Get the leaf tile of the currently focused window
+  getFocusedLeafTile() {
+    var win = this.workspace.activeWindow;
+    if (!win) return null;
+    var t = win.tile || win._tileShadow;
+    if (!t) return null;
+    // Navigate to leaf (should already be a leaf)
+    while (t.tiles && t.tiles.length > 0) {
+      t = t.tiles[0];
+    }
+    return t;
+  }
+
+  // Get all leaf tiles (no children) for a desktop/screen
+  getLeafTiles(
+    desktop = this.workspace.currentDesktop,
+    screen = this.workspace.activeScreen,
+  ) {
+    var root = this.getRootTile(desktop, screen);
+    if (!root) return [];
+    var leaves = [];
+    var stack = root.tiles.length > 0 ? root.tiles.slice() : [root];
+    while (stack.length > 0) {
+      var t = stack.pop();
+      if (t.tiles && t.tiles.length > 0) {
+        for (var i = 0; i < t.tiles.length; i++) {
+          stack.push(t.tiles[i]);
+        }
+      } else {
+        t._screen = screen;
+        t._desktop = desktop;
+        leaves.push(t);
+      }
+    }
+    return leaves;
+  }
+
+  //Get tiles from the screen and virtual desktop (ordered)
   getOrderedTiles(
     desktop = this.workspace.currentDesktop,
     screen = this.workspace.activeScreen,
     parentTiles = false,
   ) {
-    const tileRoot = this.workspace.rootTile(screen, desktop);
+    var tileRoot = this.workspace.rootTile(screen, desktop);
 
     if (tileRoot === null) {
       return [];
     }
 
-    const tiles = this.orderTiles(
+    var tiles = this.orderTiles(
       tileRoot.tiles.length !== 0 ? tileRoot.tiles : [tileRoot],
       parentTiles,
     );
 
-    for (const tile of tiles) {
-      tile._screen = screen;
-      tile._desktop = desktop;
+    for (var i = 0; i < tiles.length; i++) {
+      tiles[i]._screen = screen;
+      tiles[i]._desktop = desktop;
     }
 
     return tiles;
@@ -191,9 +126,10 @@ export class Tiles {
 
   //Get tiles, ordered by tilesPriority
   orderTiles(tiles, parentTiles) {
-    let tilesOrdered = [];
+    var tilesOrdered = [];
 
-    for (let tile of tiles) {
+    for (var i = 0; i < tiles.length; i++) {
+      var tile = tiles[i];
       if (tile.tiles.length !== 0) {
         if (parentTiles === true) {
           tile._parent = true;
@@ -208,26 +144,27 @@ export class Tiles {
       }
     }
 
-    return tilesOrdered.sort((a, b) => {
-      for (const priority of this.config.tilesPriority) {
-        let comparison = 0;
+    return tilesOrdered.sort(function (a, b) {
+      for (var j = 0; j < this.config.tilesPriority.length; j++) {
+        var priority = this.config.tilesPriority[j];
+        var comparison = 0;
         switch (priority) {
-          case "Width":
+          case "宽度":
             comparison = b.absoluteGeometry.width - a.absoluteGeometry.width;
             break;
-          case "Height":
+          case "高度":
             comparison = b.absoluteGeometry.height - a.absoluteGeometry.height;
             break;
-          case "Top":
+          case "顶部":
             comparison = a.absoluteGeometry.y - b.absoluteGeometry.y;
             break;
-          case "Right":
+          case "右侧":
             comparison = b.absoluteGeometry.x - a.absoluteGeometry.x;
             break;
-          case "Left":
+          case "左侧":
             comparison = a.absoluteGeometry.x - b.absoluteGeometry.x;
             break;
-          case "Bottom":
+          case "底部":
             comparison = b.absoluteGeometry.y - a.absoluteGeometry.y;
             break;
         }
@@ -236,32 +173,21 @@ export class Tiles {
         }
       }
       return 0;
-    });
-  }
-
-  //Delete reverse tile layout
-  deleteTiles(tiles, tileRoot) {
-    for (let index = tiles.length; index > 0; index--) {
-      tileRoot._avoidExtendChildTilesChanged = true;
-      if (tiles[index - 1].parent !== null) {
-        tiles[index - 1].parent._avoidExtendChildTilesChanged = true;
-      }
-      tiles[index - 1].remove();
-    }
+    }.bind(this));
   }
 
   //Get all tiles from the actual desktop with all screens
   getTilesCurrentDesktop(parentTiles = false, screenAll = true) {
-    let screens = this.workspace.screens;
+    var screens = this.workspace.screens;
 
     if (screenAll === false) {
       screens = [this.workspace.activeScreen];
     }
 
-    let tiles = [];
-    for (const screen of screens) {
+    var tiles = [];
+    for (var i = 0; i < screens.length; i++) {
       tiles = tiles.concat(
-        this.getOrderedTiles(undefined, screen, parentTiles),
+        this.getOrderedTiles(undefined, screens[i], parentTiles),
       );
     }
     return tiles;
@@ -269,7 +195,11 @@ export class Tiles {
 
   //Exchange windows between tiles
   exchangeTiles(windowsExchange, tile) {
-    for (const window of windowsExchange) {
+    // Skip if tile is a container (has children)
+    if (tile.tiles && tile.tiles.length > 0) return;
+
+    for (var i = 0; i < windowsExchange.length; i++) {
+      var window = windowsExchange[i];
       window._avoidMaximizeTrigger = true;
       window.setMaximize(false, false);
 
@@ -301,58 +231,35 @@ export class Tiles {
     return null;
   }
 
-  //Disconect all signals
+  //Disconnect all signals
   disconnectSignals(screenAll = true) {
-    let screens = this.workspace.screens;
+    var screens = this.workspace.screens;
 
     if (screenAll === false) {
       screens = [this.workspace.activeScreen];
     }
 
-    for (const screen of screens) {
-      const rootTile = this.getRootTile(undefined, screen);
+    for (var si = 0; si < screens.length; si++) {
+      var rootTile = this.getRootTile(undefined, screens[si]);
 
-      for (const key in rootTile._signals) {
-        rootTile[key].disconnect(rootTile._signals[key]);
+      if (rootTile._signals) {
+        for (var key in rootTile._signals) {
+          rootTile[key].disconnect(rootTile._signals[key]);
+        }
       }
       rootTile._signals = undefined;
     }
 
-    const tiles = this.getTilesCurrentDesktop(true, screenAll);
+    var tiles = this.getTilesCurrentDesktop(true, screenAll);
 
-    for (const tile of tiles) {
-      for (const key in tile._signals) {
-        tile[key].disconnect(tile._signals[key]);
+    for (var ti = 0; ti < tiles.length; ti++) {
+      var tile = tiles[ti];
+      if (tile._signals) {
+        for (var key in tile._signals) {
+          tile[key].disconnect(tile._signals[key]);
+        }
       }
       tile._signals = undefined;
     }
-  }
-
-  checkNextLayout(
-    desktop = this.workspace.currentDesktop,
-    screen = this.workspace.activeScreen,
-  ) {
-    const currentTileCount = this.getOrderedTiles(desktop, screen).length;
-    const layouts = this.getDefaultLayouts();
-
-    if (Array.isArray(this.config.layoutCustom)) {
-      layouts.push(this.config.layoutCustom);
-    }
-
-    const countTiles = (layoutItems) => {
-      let count = 0;
-      for (const item of layoutItems) {
-        if (item.tiles !== undefined) {
-          count += countTiles(item.tiles);
-        } else {
-          count++;
-        }
-      }
-      return count;
-    };
-
-    return layouts.find((layout) => {
-      return countTiles(layout) > currentTileCount;
-    });
   }
 }

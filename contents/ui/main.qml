@@ -60,6 +60,7 @@ Window {
             UIWindowCursor: KWin.readConfig("UIWindowCursor", false),
             UIMode: KWin.readConfig("UIMode", 0),
             UIWindowCompactPosition: KWin.readConfig("UIWindowCompactPosition", 1),
+            splitDirection: KWin.readConfig("SplitDirection", 1),
             resizeStep: KWin.readConfig("ResizeStep", 50)
         };
 
