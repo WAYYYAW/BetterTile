@@ -197,7 +197,7 @@ export class Engine {
     window._maximized = mode === 3;
   }
 
-  //When a window is minimized, extend windows
+  //When a window is minimized/unminimized: adjust tile tree
   onMinimizedChanged(window) {
     if (this.classes.blocklist.check(window) === true) {
       return;
@@ -210,7 +210,30 @@ export class Engine {
 
     window._avoidMaximizeTrigger = true;
     window.setMaximize(false, false);
-    this.classes.windows.extendCurrentDesktop(true);
+
+    if (window.minimized === true) {
+      // Minimized: remove its tile so remaining windows reflow
+      this.state.avoidChildChanged = true;
+      this.classes.windows.setTilesOnRemove(window);
+      this.setTilesSignals(false);
+      this.classes.timer.start("minimizedTileRemove", () => {
+        this.state.avoidChildChanged = false;
+      });
+    } else {
+      // Unminimized: add back into tile tree (split if needed)
+      window._tileShadow = undefined;
+      this.state.avoidChildChanged = true;
+      this.classes.windows.setTilesOnAdd(
+        window,
+        this.workspace.currentDesktop,
+        this.workspace.activeScreen,
+      );
+      this.setTilesSignals(false);
+      this.classes.windows.extendCurrentDesktop(false);
+      this.classes.timer.start("unminimizedTileAdd", () => {
+        this.state.avoidChildChanged = false;
+      });
+    }
   }
 
   // Focus window when a current desktop is changed
