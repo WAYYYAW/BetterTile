@@ -1,18 +1,21 @@
 {
   "KPlugin": {
-    "Name": "Fluid tile",
-    "Description": "Auto tiling for KDE",
+    "Name": "BetterTile",
+    "Description": "Sway-style dynamic tiling for KDE Plasma",
     "Icon": "preferences-system-windows",
     "Authors": [
       {
         "Email": "jesuscarclem30@gmail.com",
         "Name": "Serroda"
+      },
+      {
+        "Name": "WAY"
       }
     ],
-    "Id": "fluid-tile",
-    "Version": "7.2",
+    "Id": "bettertile",
+    "Version": "0.1",
     "License": "GPLv3",
-    "Website": "https://codeberg.org/Serroda/fluid-tile"
+    "Website": "https://github.com/WAYYYAW/BetterTile"
   },
   "X-Plasma-API": "declarativescript",
   "KPackageStructure": "KWin/Script",
