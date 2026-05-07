@@ -11,7 +11,7 @@ export class Shortcuts {
           const added = blocklist.toggleWindow(win);
           if (added) {
             win.opacity = config.floatingOpacity || 0.82;
-            windows.extendCurrentDesktop();
+            windows.setTilesOnRemove(win);
 
             // Center floating window at 50% of workarea
             const area = workspace.clientArea(workspace.MaximizeArea, workspace.activeScreen, workspace.currentDesktop);
@@ -25,6 +25,7 @@ export class Shortcuts {
           } else {
             win.opacity = 1.0;
             windows.setEmptyTile();
+            windows.extendCurrentDesktop(false);
           }
         },
       },
