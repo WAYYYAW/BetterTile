@@ -12,6 +12,7 @@ export class Shortcuts {
           if (added) {
             win.opacity = config.floatingOpacity || 0.82;
             windows.setTilesOnRemove(win);
+            win._tileShadow = undefined;
 
             // Center floating window at 50% of workarea
             const area = workspace.clientArea(workspace.MaximizeArea, workspace.activeScreen, workspace.currentDesktop);

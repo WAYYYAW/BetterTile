@@ -344,9 +344,19 @@ export class Windows {
     }
 
     if (!tileEmpty) {
-      // No empty tile: split the focused tile to make room
+      // No empty tile: find a valid leaf to split (skip self if focused tile is stale)
       var focusedTile = this.tiles.getFocusedLeafTile();
-      if (focusedTile) {
+      // If focused tile is the window being placed, it might be stale — find another
+      if (!focusedTile || (focusedTile.tiles && focusedTile.tiles.length > 0)) {
+        for (var k = 0; k < windowsOther.length; k++) {
+          var ft = windowsOther[k].tile || windowsOther[k]._tileShadow;
+          if (ft && (!ft.tiles || ft.tiles.length === 0)) {
+            focusedTile = ft;
+            break;
+          }
+        }
+      }
+      if (focusedTile && (!focusedTile.tiles || focusedTile.tiles.length === 0)) {
         var direction = this.tiles.getSplitDirection();
         var children = this.tiles.splitTileForWindow(focusedTile, direction);
         if (children) {
@@ -356,9 +366,15 @@ export class Windows {
     }
 
     if (!tileEmpty) {
-      // Ultimate fallback: use any leaf tile
-      if (leaves.length > 0) {
-        tileEmpty = leaves[0];
+      // Ultimate fallback: use first unoccupied leaf, or split last resort
+      for (var li = 0; li < leaves.length; li++) {
+        var occ = false;
+        for (var lj = 0; lj < windowsOther.length; lj++) {
+          if (windowsOther[lj].tile === leaves[li] || windowsOther[lj]._tileShadow === leaves[li]) {
+            occ = true; break;
+          }
+        }
+        if (!occ) { tileEmpty = leaves[li]; break; }
       }
     }
 
