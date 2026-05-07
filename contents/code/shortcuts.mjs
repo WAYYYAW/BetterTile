@@ -12,6 +12,16 @@ export class Shortcuts {
           if (added) {
             win.opacity = config.floatingOpacity || 0.82;
             windows.extendCurrentDesktop();
+
+            // Center floating window at 50% of workarea
+            const area = workspace.clientArea(workspace.MaximizeArea, workspace.activeScreen, workspace.currentDesktop);
+            const fw = Math.round(area.width * 0.5);
+            const fh = Math.round(area.height * 0.5);
+            win.frameGeometry = Qt.rect(
+              area.x + Math.round((area.width - fw) / 2),
+              area.y + Math.round((area.height - fh) / 2),
+              fw, fh,
+            );
           } else {
             win.opacity = 1.0;
             windows.setEmptyTile();
