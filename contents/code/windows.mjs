@@ -122,37 +122,45 @@ export class Windows {
 
   // Extend windows to fill tile bounds
   extend(windows, panelsSize, skipSingleMargin = false) {
-    // Single window: 75% centered on desktop
+    // Count visible (non-minimized) windows
+    var visibleCount = 0;
+    var lastVisible = null;
+    for (var vi = 0; vi < windows.length; vi++) {
+      if (!windows[vi].minimized) { visibleCount++; lastVisible = windows[vi]; }
+    }
+
+    // Single visible window: size to configured percentage of desktop
     if (
       skipSingleMargin !== true &&
-      windows.length === 1 &&
-      windows[0].minimized === false
+      visibleCount === 1 &&
+      lastVisible !== null
     ) {
-      var win = windows[0];
+      var sizePct = (this.config.singleWindowSize || 75) / 100;
+      var win = lastVisible;
       win._avoidMaximizeTrigger = true;
       win.setMaximize(false, false);
       var wa = panelsSize.workarea;
       var sw = wa.right - wa.left;
       var sh = wa.bottom - wa.top;
-      var mx = Math.round(sw * 0.125);
-      var my = Math.round(sh * 0.125);
+      var marginX = Math.round(sw * (1 - sizePct) / 2);
+      var marginY = Math.round(sh * (1 - sizePct) / 2);
       win.frameGeometry = Qt.rect(
-        wa.left + mx, wa.top + my,
-        sw - mx * 2, sh - my * 2,
+        wa.left + marginX, wa.top + marginY,
+        sw - marginX * 2, sh - marginY * 2,
       );
       return;
     }
 
-    // Single window + maximizeExtend fallback
+    // Single visible window + maximizeExtend fallback
     if (
       this.config.maximizeExtend === true &&
-      windows.length === 1 &&
-      windows[0].minimized === false &&
-      windows[0]._avoidMaximizeExtend !== true
+      visibleCount === 1 &&
+      lastVisible !== null &&
+      lastVisible._avoidMaximizeExtend !== true
     ) {
-      windows[0]._avoidMaximizeTrigger = true;
-      windows[0]._avoidMaximizeExtend = false;
-      windows[0].setMaximize(true, true);
+      lastVisible._avoidMaximizeTrigger = true;
+      lastVisible._avoidMaximizeExtend = false;
+      lastVisible.setMaximize(true, true);
       return;
     }
 

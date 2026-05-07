@@ -55,6 +55,25 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="tabSingle">
+      <attribute name="title"><string>单窗口</string></attribute>
+      <layout class="QFormLayout" name="formSingle">
+       <property name="verticalSpacing"><number>10</number></property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelSingleSize">
+         <property name="text"><string>单窗口占据桌面比例</string></property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QSpinBox" name="kcfg_SingleWindowSize">
+         <property name="suffix"><string>%</string></property>
+         <property name="minimum"><number>30</number></property>
+         <property name="maximum"><number>100</number></property>
+         <property name="singleStep"><number>5</number></property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="tabFloating">
       <attribute name="title"><string>浮动窗口</string></attribute>
       <layout class="QFormLayout" name="formFloating">

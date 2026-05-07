@@ -53,6 +53,7 @@ Window {
             UIWindowCompactPosition: KWin.readConfig("UIWindowCompactPosition", 1),
             splitDirection: KWin.readConfig("SplitDirection", 1),
             resizeStep: KWin.readConfig("ResizeStep", 50),
+            singleWindowSize: KWin.readConfig("SingleWindowSize", 75),
             floatingOpacity: KWin.readConfig("FloatingOpacity", 82) / 100
         };
 

@@ -12,6 +12,9 @@
         <entry name="ResizeStep" type="Int">
             <default>50</default>
         </entry>
+        <entry name="SingleWindowSize" type="Int">
+            <default>75</default>
+        </entry>
         <entry name="FloatingOpacity" type="Int">
             <default>82</default>
         </entry>
