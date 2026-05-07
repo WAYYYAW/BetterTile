@@ -52,6 +52,12 @@ export class Tiles {
     var child0 = children[0];
     var child1 = children[1];
 
+    // Inherit desktop/screen metadata from parent tile
+    child0._desktop = tile._desktop;
+    child0._screen = tile._screen;
+    child1._desktop = tile._desktop;
+    child1._screen = tile._screen;
+
     // Manage existing window into child0
     managedWin._avoidMaximizeTrigger = true;
     managedWin._avoidTileChangedTrigger = true;

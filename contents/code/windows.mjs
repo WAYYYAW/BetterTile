@@ -379,7 +379,8 @@ export class Windows {
     }
 
     if (tileEmpty) {
-      window.desktops = [tileEmpty._desktop];
+      var targetDesktop = tileEmpty._desktop || this.workspace.currentDesktop;
+      window.desktops = [targetDesktop];
 
       if (window._maximized === true) {
         window._avoidMaximizeTrigger = true;
